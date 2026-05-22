@@ -36,6 +36,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/events", require("./routes/events"));
 app.use("/api/orders", require("./routes/orders"));
 app.use("/api/ticket", require("./routes/ticket"));
+app.use("/api/admin", require("./routes/admin"));
 
 const frontendBuildPath = path.join(__dirname, "../frontend/build");
 
