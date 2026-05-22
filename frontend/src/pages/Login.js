@@ -9,7 +9,7 @@ function Login() {
   const navigate = useNavigate();
 
   const handleCoachIdChange = (e) => {
-    const value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 10);
+    const value = e.target.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 10);
     setCoachId(value);
   };
 

@@ -7,12 +7,13 @@ const { authMiddleware, JWT_SECRET } = require("../middleware/auth");
 router.post("/login", async (req, res) => {
   try {
     const { coachId } = req.body;
+    const normalizedCoachId = String(coachId || "").trim().toUpperCase();
 
-    if (!coachId || !/^[a-zA-Z0-9]{10}$/.test(coachId)) {
+    if (!/^[A-Z0-9]{10}$/.test(normalizedCoachId)) {
       return res.status(400).json({ message: "Invalid Herbalife ID" });
     }
 
-    let user = await User.findOne({ coachId });
+    let user = await User.findOne({ coachId: normalizedCoachId });
 
     if (!user) {
       return res.status(401).json({ message: "Herbalife ID not found" });

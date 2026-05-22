@@ -8,12 +8,21 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://myherbalife.mi27.in"
+  "https://myherbalife.mi27.in",
+  "https://ticket-system-vpr6.onrender.com"
 ];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  return allowedOrigins.includes(origin) || /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin);
+};
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
