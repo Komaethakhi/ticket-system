@@ -8,6 +8,9 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [coachIds, setCoachIds] = useState("");
+  const [addingCoachIds, setAddingCoachIds] = useState(false);
+  const [coachIdMessage, setCoachIdMessage] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async () => {
@@ -49,6 +52,27 @@ function AdminDashboard() {
       setError(err.response?.data?.message || "Failed to download Excel sheet");
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleAddCoachIds = async (e) => {
+    e.preventDefault();
+    setCoachIdMessage("");
+    setError("");
+
+    try {
+      setAddingCoachIds(true);
+      const res = await api.post("/admin/coach-ids", { coachIds });
+      const { added, skipped, invalid } = res.data;
+      setCoachIdMessage(
+        `Added ${added.length} ID(s). Skipped ${skipped.length} duplicate(s). Invalid ${invalid.length}.`
+      );
+      setCoachIds("");
+      await loadSummary();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to add coach IDs");
+    } finally {
+      setAddingCoachIds(false);
     }
   };
 
@@ -95,6 +119,33 @@ function AdminDashboard() {
               <span>Unique IDs</span>
               <strong>{totals.uniqueCoaches || 0}</strong>
             </article>
+            <article>
+              <span>Registered IDs</span>
+              <strong>{totals.registeredCoachIds || 0}</strong>
+            </article>
+          </section>
+
+          <section className="admin-section">
+            <div className="admin-section-title">
+              <div>
+                <h2>Add Coach IDs</h2>
+                <p>Paste one ID per line, or separate multiple IDs with commas.</p>
+              </div>
+            </div>
+            <form className="admin-coach-form" onSubmit={handleAddCoachIds}>
+              <textarea
+                value={coachIds}
+                onChange={(e) => setCoachIds(e.target.value.toUpperCase())}
+                placeholder={"Enter Herbalife IDs\nExample:\nW1C4642850\nA1B2C3D4E5"}
+                rows="5"
+              />
+              <div className="admin-coach-form-actions">
+                {coachIdMessage && <p>{coachIdMessage}</p>}
+                <button disabled={addingCoachIds}>
+                  {addingCoachIds ? "Adding..." : "Add Coach IDs"}
+                </button>
+              </div>
+            </form>
           </section>
 
           <section className="admin-section">

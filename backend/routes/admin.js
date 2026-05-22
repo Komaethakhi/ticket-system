@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const Order = require("../models/Order");
+const User = require("../models/User");
 const { JWT_SECRET } = require("../middleware/auth");
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -80,7 +81,10 @@ router.post("/login", (req, res) => {
 
 router.get("/summary", adminAuthMiddleware, async (req, res) => {
   try {
-    const orders = await getConfirmedOrders();
+    const [orders, registeredCoachCount] = await Promise.all([
+      getConfirmedOrders(),
+      User.countDocuments()
+    ]);
     const rows = orders.map(formatOrder);
 
     const coachMap = new Map();
@@ -107,7 +111,8 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
         totalTicketsSold: rows.reduce((sum, row) => sum + row.quantity, 0),
         totalRevenue: rows.reduce((sum, row) => sum + row.amount, 0),
         totalOrders: rows.length,
-        uniqueCoaches: coachSummary.length
+        uniqueCoaches: coachSummary.length,
+        registeredCoachIds: registeredCoachCount
       },
       coachSummary,
       orders: rows
@@ -115,6 +120,60 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Admin summary error:", err);
     res.status(500).json({ message: "Failed to load admin summary" });
+  }
+});
+
+router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
+  try {
+    const rawCoachIds = Array.isArray(req.body.coachIds)
+      ? req.body.coachIds
+      : String(req.body.coachIds || "").split(/[\s,;]+/);
+
+    const uniqueCoachIds = Array.from(
+      new Set(
+        rawCoachIds
+          .map((coachId) => String(coachId || "").trim().toUpperCase())
+          .filter(Boolean)
+      )
+    );
+
+    const invalidCoachIds = uniqueCoachIds.filter(
+      (coachId) => !/^[A-Z0-9]{10}$/.test(coachId)
+    );
+    const validCoachIds = uniqueCoachIds.filter(
+      (coachId) => /^[A-Z0-9]{10}$/.test(coachId)
+    );
+
+    if (validCoachIds.length === 0) {
+      return res.status(400).json({
+        message: "Enter at least one valid 10 character Herbalife ID",
+        added: [],
+        skipped: [],
+        invalid: invalidCoachIds
+      });
+    }
+
+    const existingUsers = await User.find({
+      coachId: { $in: validCoachIds }
+    }).select("coachId");
+    const existingCoachIds = new Set(existingUsers.map((user) => user.coachId));
+    const newCoachIds = validCoachIds.filter(
+      (coachId) => !existingCoachIds.has(coachId)
+    );
+
+    if (newCoachIds.length > 0) {
+      await User.insertMany(newCoachIds.map((coachId) => ({ coachId })));
+    }
+
+    res.status(201).json({
+      success: true,
+      added: newCoachIds,
+      skipped: Array.from(existingCoachIds),
+      invalid: invalidCoachIds
+    });
+  } catch (err) {
+    console.error("Add coach IDs error:", err);
+    res.status(500).json({ message: "Failed to add coach IDs" });
   }
 });
 
