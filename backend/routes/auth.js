@@ -9,7 +9,7 @@ router.post("/login", async (req, res) => {
     const { coachId } = req.body;
     const normalizedCoachId = String(coachId || "").trim().toUpperCase();
 
-    if (!/^[A-Z0-9]{10}$/.test(normalizedCoachId)) {
+    if (!/^[A-Z0-9]{9,10}$/.test(normalizedCoachId)) {
       return res.status(400).json({ message: "Invalid Herbalife ID" });
     }
 

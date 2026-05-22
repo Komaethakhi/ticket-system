@@ -129,7 +129,7 @@ function AdminDashboard() {
             <div className="admin-section-title">
               <div>
                 <h2>Add Coach IDs</h2>
-                <p>Paste one ID per line, or separate multiple IDs with commas.</p>
+                <p>Paste 9 or 10 character IDs, one per line or separated with commas.</p>
               </div>
             </div>
             <form className="admin-coach-form" onSubmit={handleAddCoachIds}>

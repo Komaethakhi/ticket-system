@@ -18,8 +18,8 @@ function Login() {
     e.preventDefault();
     setError("");
 
-    if (!/^[a-zA-Z0-9]{10}$/.test(coachId)) {
-      setError("Enter a valid 10 character Herbalife ID");
+    if (!/^[a-zA-Z0-9]{9,10}$/.test(coachId)) {
+      setError("Enter a valid 9 or 10 character Herbalife ID");
       return;
     }
 
@@ -45,7 +45,7 @@ function Login() {
     }
   };
 
-  const isCoachIdReady = /^[A-Z0-9]{10}$/.test(coachId);
+  const isCoachIdReady = /^[A-Z0-9]{9,10}$/.test(coachId);
 
   return (
     <div className="login-page">
@@ -70,7 +70,7 @@ function Login() {
           <div className="login-card-header">
             <span className="login-badge">Coach Portal</span>
             <h2 className="login-title">Welcome back</h2>
-            <p className="login-subtitle">Sign in with your 10 character Herbalife ID.</p>
+            <p className="login-subtitle">Sign in with your 9 or 10 character Herbalife ID.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -94,7 +94,7 @@ function Login() {
             />
 
             <div className="login-helper-row">
-              <span>{coachId.length}/10 characters</span>
+              <span>{coachId.length}/9-10 characters</span>
               <span className={isCoachIdReady ? "login-status-ready" : "login-status"}>
                 {isCoachIdReady ? "Ready" : "Enter your ID"}
               </span>

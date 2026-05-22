@@ -138,15 +138,15 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
     );
 
     const invalidCoachIds = uniqueCoachIds.filter(
-      (coachId) => !/^[A-Z0-9]{10}$/.test(coachId)
+      (coachId) => !/^[A-Z0-9]{9,10}$/.test(coachId)
     );
     const validCoachIds = uniqueCoachIds.filter(
-      (coachId) => /^[A-Z0-9]{10}$/.test(coachId)
+      (coachId) => /^[A-Z0-9]{9,10}$/.test(coachId)
     );
 
     if (validCoachIds.length === 0) {
       return res.status(400).json({
-        message: "Enter at least one valid 10 character Herbalife ID",
+        message: "Enter at least one valid 9 or 10 character Herbalife ID",
         added: [],
         skipped: [],
         invalid: invalidCoachIds
