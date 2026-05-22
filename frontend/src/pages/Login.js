@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import "./Login.css";
 
 function Login() {
   const [coachId, setCoachId] = useState("");
@@ -44,77 +45,71 @@ function Login() {
     }
   };
 
+  const isCoachIdReady = /^[A-Z0-9]{10}$/.test(coachId);
+
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Login</h2>
+    <div className="login-page">
+      <main className="login-shell">
+        <section className="login-brand-panel">
+          <div className="login-brand-mark">H</div>
+          <p className="login-kicker">Herbalife Training Desk</p>
+          <h1 className="login-heading">Tickets, bookings, and passes in one calm place.</h1>
+          <div className="login-stats-grid">
+            <div className="login-stat">
+              <span className="login-stat-value">24/7</span>
+              <span className="login-stat-label">Access</span>
+            </div>
+            <div className="login-stat">
+              <span className="login-stat-value">QR</span>
+              <span className="login-stat-label">Tickets</span>
+            </div>
+          </div>
+        </section>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            type="text"
-            placeholder="Enter 10 character Herbalife ID"
-            value={coachId}
-            onChange={handleCoachIdChange}
-            style={styles.input}
-            maxLength={10}
-            autoComplete="username"
-          />
+        <section className="login-card" aria-label="Coach login">
+          <div className="login-card-header">
+            <span className="login-badge">Coach Portal</span>
+            <h2 className="login-title">Welcome back</h2>
+            <p className="login-subtitle">Sign in with your 10 character Herbalife ID.</p>
+          </div>
 
-          {error && <p style={styles.error}>{error}</p>}
+          <form onSubmit={handleSubmit} className="login-form">
+            <label className="login-label" htmlFor="coachId">
+              Herbalife ID
+            </label>
+            <input
+              id="coachId"
+              type="text"
+              placeholder="W1C4642850"
+              value={coachId}
+              onChange={handleCoachIdChange}
+              className={[
+                "login-input",
+                error ? "login-input-error" : "",
+                isCoachIdReady ? "login-input-ready" : ""
+              ].join(" ")}
+              maxLength={10}
+              autoComplete="username"
+              autoFocus
+            />
 
-          <button disabled={loading} style={styles.button}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
+            <div className="login-helper-row">
+              <span>{coachId.length}/10 characters</span>
+              <span className={isCoachIdReady ? "login-status-ready" : "login-status"}>
+                {isCoachIdReady ? "Ready" : "Enter your ID"}
+              </span>
+            </div>
+
+            {error && <p className="login-error">{error}</p>}
+
+            <button disabled={loading} className="login-button">
+              {loading ? "Checking ID..." : "Login"}
+            </button>
+          </form>
+        </section>
+      </main>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f5f5f5"
-  },
-  card: {
-    width: "350px",
-    padding: "30px",
-    borderRadius: "8px",
-    background: "#fff",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)"
-  },
-  title: {
-    textAlign: "center",
-    marginTop: 0
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    marginTop: "15px"
-  },
-  input: {
-    padding: "10px",
-    fontSize: "15px",
-    borderRadius: "4px",
-    border: "1px solid #ccc"
-  },
-  button: {
-    padding: "10px",
-    background: "#7AC143",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "600"
-  },
-  error: {
-    color: "#c62828",
-    fontSize: "14px",
-    margin: 0
-  }
-};
 
 export default Login;
