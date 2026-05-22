@@ -80,7 +80,7 @@ function Login() {
             <input
               id="coachId"
               type="text"
-              placeholder="W1C4642850"
+              placeholder="Enter your Herbalife ID"
               value={coachId}
               onChange={handleCoachIdChange}
               className={[
