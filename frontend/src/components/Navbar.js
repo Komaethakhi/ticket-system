@@ -8,6 +8,9 @@ function Navbar() {
     sessionStorage.removeItem("userId");
     sessionStorage.removeItem("coachId");
     sessionStorage.removeItem("coachLoggedIn");
+    sessionStorage.removeItem("role");
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUsername");
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("coachId");

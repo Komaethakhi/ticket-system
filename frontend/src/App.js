@@ -5,7 +5,6 @@ import EventDetails from "./pages/EventDetails";
 import Login from "./pages/Login";
 import MyTickets from "./pages/MyTickets";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 
@@ -14,7 +13,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/login" element={<Login />} />
         <Route
           path="/admin"
           element={

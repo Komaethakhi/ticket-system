@@ -31,12 +31,22 @@ function Login() {
       localStorage.removeItem("userId");
       localStorage.removeItem("coachId");
       localStorage.removeItem("coachLoggedIn");
+      sessionStorage.removeItem("adminToken");
+      sessionStorage.removeItem("adminUsername");
 
-      sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("userId", res.data.userId);
       sessionStorage.setItem("coachId", res.data.coachId);
-      sessionStorage.setItem("coachLoggedIn", "true");
+      sessionStorage.setItem("role", res.data.role || "coach");
 
+      if (res.data.role === "admin") {
+        sessionStorage.setItem("adminToken", res.data.token);
+        sessionStorage.setItem("adminUsername", res.data.coachId);
+        navigate("/admin", { replace: true });
+        return;
+      }
+
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("coachLoggedIn", "true");
       navigate("/", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
