@@ -41,11 +41,21 @@ function TrainingDetails() {
   }, [id]);
 
   const increaseQty = () => {
-    if (quantity < 100) setQuantity(quantity + 1);
+    if (quantity < 100) {
+      setQuantity(quantity + 1);
+      setPaymentOrder(null);
+      setTransactionId("");
+      setPaymentMessage("");
+    }
   };
 
   const decreaseQty = () => {
-    if (quantity > 1) setQuantity(quantity - 1);
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+      setPaymentOrder(null);
+      setTransactionId("");
+      setPaymentMessage("");
+    }
   };
 
   const handleBook = async () => {
@@ -214,7 +224,11 @@ function TrainingDetails() {
                   <strong>{paymentOrder.payment.upiId}</strong>
                 </div>
                 <div style={styles.infoRow}>
-                  <span>Amount</span>
+                  <span>Tickets</span>
+                  <strong>{paymentOrder.event.ticket_price} x {paymentOrder.quantity}</strong>
+                </div>
+                <div style={styles.infoRow}>
+                  <span>Total amount to pay</span>
                   <strong>Rs. {paymentOrder.amount}</strong>
                 </div>
               </div>

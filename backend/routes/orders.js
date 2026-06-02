@@ -58,6 +58,7 @@ router.post("/create", authMiddleware, async (req, res) => {
       success: true,
       orderId: order._id,
       amount,
+      quantity: ticketCount,
       payment: {
         method: "UPI_QR",
         upiId: PAYMENT_UPI_ID,
