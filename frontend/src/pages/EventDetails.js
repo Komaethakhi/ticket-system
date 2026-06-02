@@ -331,7 +331,7 @@ const styles = {
   },
   bookingLayout: {
     display: "grid",
-    gridTemplateColumns: "1fr 360px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "22px",
     marginTop: "24px"
   },
@@ -438,7 +438,7 @@ const styles = {
   },
   paymentPanel: {
     display: "grid",
-    gridTemplateColumns: "1fr 240px",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "22px",
     marginTop: "24px",
     background: "#fff",
