@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
+import useIsMobile from "../hooks/useIsMobile";
 
 function Home() {
   const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadTrainings = async () => {
@@ -26,38 +28,40 @@ function Home() {
     <>
       <Navbar />
 
-      <main style={styles.page}>
-        <section style={styles.hero}>
+      <main style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
+        <section style={{ ...styles.hero, ...(isMobile ? styles.heroMobile : {}) }}>
           <div>
-            <span style={styles.badge}>Training Portal</span>
-            <h1 style={styles.heroTitle}>Available Trainings</h1>
+            <span style={styles.badge}>Event Portal</span>
+            <h1 style={{ ...styles.heroTitle, ...(isMobile ? styles.heroTitleMobile : {}) }}>
+              Available Events
+            </h1>
             <p style={styles.heroText}>
               Choose your session, reserve seats, and complete payment securely.
             </p>
           </div>
-          <div style={styles.summaryBox}>
+          <div style={{ ...styles.summaryBox, ...(isMobile ? styles.summaryBoxMobile : {}) }}>
             <span style={styles.summaryLabel}>Active sessions</span>
             <strong style={styles.summaryValue}>{trainings.length}</strong>
           </div>
         </section>
 
-        <section style={styles.toolbar}>
+        <section style={{ ...styles.toolbar, ...(isMobile ? styles.toolbarMobile : {}) }}>
           <div>
             <h2 style={styles.heading}>Upcoming Sessions</h2>
-            <p style={styles.subText}>Select a training to view details and book tickets.</p>
+            <p style={styles.subText}>Select an event to view details and book tickets.</p>
           </div>
         </section>
 
-        {loading && <p style={styles.loading}>Loading trainings...</p>}
+        {loading && <p style={styles.loading}>Loading events...</p>}
 
         {!loading && trainings.length === 0 && (
           <div style={styles.emptyBox}>
-            <h3>No trainings available</h3>
+            <h3>No events available</h3>
             <p>Please check again later.</p>
           </div>
         )}
 
-        <div style={styles.grid}>
+        <div style={{ ...styles.grid, ...(isMobile ? styles.gridMobile : {}) }}>
           {trainings.map((t) => (
             <article key={t._id} style={styles.card}>
               <div style={styles.cardTop}>
@@ -65,10 +69,12 @@ function Home() {
                 <strong style={styles.price}>Rs. {t.ticket_price}</strong>
               </div>
 
-              <h3 style={styles.title}>{t.title}</h3>
+              <h3 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
+                {t.title}
+              </h3>
               <p style={styles.desc}>{t.description}</p>
 
-              <div style={styles.metaList}>
+              <div style={{ ...styles.metaList, ...(isMobile ? styles.metaListMobile : {}) }}>
                 <div style={styles.metaItem}>
                   <span style={styles.metaLabel}>Date</span>
                   <strong>{t.date}</strong>
@@ -81,7 +87,7 @@ function Home() {
 
               <Link to={`/training/${t._id}`} style={styles.link}>
                 <button style={styles.button}>
-                  View Training
+                  View Event
                 </button>
               </Link>
             </article>
@@ -96,7 +102,12 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background: "#F4F7F3",
-    padding: "32px 38px"
+    padding: "32px 38px",
+    boxSizing: "border-box",
+    overflowX: "hidden"
+  },
+  pageMobile: {
+    padding: "18px 16px"
   },
   hero: {
     maxWidth: "1120px",
@@ -108,7 +119,12 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     gap: "24px",
+    flexWrap: "wrap",
     boxShadow: "0 14px 34px rgba(35, 83, 34, 0.18)"
+  },
+  heroMobile: {
+    padding: "24px",
+    alignItems: "stretch"
   },
   badge: {
     display: "inline-block",
@@ -123,6 +139,9 @@ const styles = {
     margin: "16px 0 8px",
     fontSize: "34px",
     lineHeight: 1.15
+  },
+  heroTitleMobile: {
+    fontSize: "28px"
   },
   heroText: {
     margin: 0,
@@ -140,6 +159,11 @@ const styles = {
     flexDirection: "column",
     justifyContent: "center"
   },
+  summaryBoxMobile: {
+    width: "100%",
+    minWidth: 0,
+    padding: "16px"
+  },
   summaryLabel: {
     color: "rgba(255,255,255,0.82)",
     fontSize: "13px",
@@ -156,6 +180,9 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "end",
     gap: "18px"
+  },
+  toolbarMobile: {
+    margin: "24px auto 16px"
   },
   heading: {
     margin: 0,
@@ -185,6 +212,10 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
     gap: "22px"
+  },
+  gridMobile: {
+    gridTemplateColumns: "1fr",
+    gap: "16px"
   },
   card: {
     background: "#fff",
@@ -218,6 +249,9 @@ const styles = {
     fontSize: "23px",
     lineHeight: 1.25
   },
+  titleMobile: {
+    fontSize: "21px"
+  },
   desc: {
     color: "#5E6A59",
     fontSize: "15px",
@@ -230,6 +264,9 @@ const styles = {
     gridTemplateColumns: "1fr 1fr",
     gap: "12px",
     margin: "22px 0"
+  },
+  metaListMobile: {
+    gridTemplateColumns: "1fr"
   },
   metaItem: {
     background: "#F4F7F3",

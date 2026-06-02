@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
+import useIsMobile from "../hooks/useIsMobile";
 
 function MyTickets() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadTickets = async () => {
@@ -38,7 +40,7 @@ function MyTickets() {
   return (
     <>
       <Navbar />
-      <div style={{ padding: "30px" }}>
+      <main style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
         <h2>My Tickets</h2>
 
         {loading && <p>Loading tickets...</p>}
@@ -58,7 +60,7 @@ function MyTickets() {
             {t.adminNote && <p>Admin note: {t.adminNote}</p>}
           </div>
         ))}
-      </div>
+      </main>
     </>
   );
 }
@@ -71,10 +73,23 @@ const formatStatus = (status) => {
 };
 
 const styles = {
+  page: {
+    padding: "30px",
+    boxSizing: "border-box",
+    background: "#F4F7F3",
+    minHeight: "calc(100vh - 64px)",
+    overflowX: "hidden"
+  },
+  pageMobile: {
+    padding: "18px 16px"
+  },
   card: {
     border: "1px solid #ccc",
     padding: "15px",
-    marginBottom: "15px"
+    marginBottom: "15px",
+    background: "#fff",
+    borderRadius: "8px",
+    overflowWrap: "anywhere"
   }
 };
 

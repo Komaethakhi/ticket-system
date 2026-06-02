@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
+import useIsMobile from "../hooks/useIsMobile";
 
 function Navbar() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -19,8 +21,10 @@ function Navbar() {
   };
 
   return (
-    <div style={styles.nav}>
-      <h2 style={styles.logo}>Herbalife Training Portal</h2>
+    <div style={{ ...styles.nav, ...(isMobile ? styles.navMobile : {}) }}>
+      <h2 style={{ ...styles.logo, ...(isMobile ? styles.logoMobile : {}) }}>
+        Herbalife Training Portal
+      </h2>
 
       <button onClick={handleLogout} style={styles.logout}>
         Logout
@@ -31,18 +35,28 @@ function Navbar() {
 
 const styles = {
   nav: {
-    height: "64px",
+    minHeight: "64px",
     background: "#7AC143", // Herbalife green
     color: "#fff",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 30px"
+    gap: "14px",
+    padding: "0 30px",
+    boxSizing: "border-box"
+  },
+  navMobile: {
+    padding: "12px 16px"
   },
   logo: {
     margin: 0,
     fontSize: "20px",
-    fontWeight: "600"
+    fontWeight: "600",
+    lineHeight: 1.2
+  },
+  logoMobile: {
+    fontSize: "16px",
+    maxWidth: "210px"
   },
   logout: {
     background: "#fff",

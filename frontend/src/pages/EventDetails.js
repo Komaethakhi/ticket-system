@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
+import useIsMobile from "../hooks/useIsMobile";
 
 function TrainingDetails() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ function TrainingDetails() {
   const [paymentOrder, setPaymentOrder] = useState(null);
   const [transactionId, setTransactionId] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const loadTraining = async () => {
@@ -113,9 +115,9 @@ function TrainingDetails() {
     return (
       <>
         <Navbar />
-        <div style={styles.page}>
+        <div style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
           <div style={styles.shell}>
-            <p style={styles.muted}>Loading training...</p>
+            <p style={styles.muted}>Loading event...</p>
           </div>
         </div>
       </>
@@ -126,9 +128,9 @@ function TrainingDetails() {
     return (
       <>
         <Navbar />
-        <div style={styles.page}>
+        <div style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
           <div style={styles.shell}>
-            <h2 style={styles.title}>Training not found</h2>
+            <h2 style={styles.title}>Event not found</h2>
           </div>
         </div>
       </>
@@ -138,19 +140,21 @@ function TrainingDetails() {
   return (
     <>
       <Navbar />
-      <main style={styles.page}>
+      <main style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
         <div style={styles.shell}>
           <button style={styles.backButton} onClick={() => navigate("/")}>
             Back
           </button>
 
           <section style={styles.hero}>
-            <div style={styles.heroContent}>
-              <span style={styles.badge}>Leadership Training</span>
-              <h1 style={styles.title}>{training.title}</h1>
+            <div style={{ ...styles.heroContent, ...(isMobile ? styles.heroContentMobile : {}) }}>
+              <span style={styles.badge}>Event Booking</span>
+              <h1 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
+                {training.title}
+              </h1>
               <p style={styles.description}>{training.description}</p>
 
-              <div style={styles.metaGrid}>
+              <div style={{ ...styles.metaGrid, ...(isMobile ? styles.metaGridMobile : {}) }}>
                 <div style={styles.metaItem}>
                   <span style={styles.metaLabel}>Date</span>
                   <strong style={styles.metaValue}>{training.date}</strong>
@@ -163,17 +167,17 @@ function TrainingDetails() {
             </div>
           </section>
 
-          <section style={styles.bookingLayout}>
+          <section style={{ ...styles.bookingLayout, ...(isMobile ? styles.bookingLayoutMobile : {}) }}>
             <div style={styles.detailsPanel}>
-              <h2 style={styles.sectionTitle}>Training Details</h2>
+              <h2 style={styles.sectionTitle}>Event Details</h2>
               <p style={styles.bodyText}>
                 Secure your seat for this session and complete the payment to confirm your ticket.
               </p>
-              <div style={styles.infoRow}>
+              <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Ticket price</span>
                 <strong>Rs. {training.ticket_price}</strong>
               </div>
-              <div style={styles.infoRow}>
+              <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Booking status</span>
                 <strong>Manual payment verification</strong>
               </div>
@@ -187,7 +191,7 @@ function TrainingDetails() {
 
               <div style={styles.divider} />
 
-              <div style={styles.quantityHeader}>
+              <div style={{ ...styles.quantityHeader, ...(isMobile ? styles.quantityHeaderMobile : {}) }}>
                 <span style={styles.quantityLabel}>Tickets</span>
                 <div style={styles.qtyBox}>
                   <button onClick={decreaseQty} style={styles.qtyBtn}>-</button>
@@ -208,26 +212,30 @@ function TrainingDetails() {
           </section>
 
           {paymentOrder && (
-            <section style={styles.paymentPanel}>
+            <section style={{ ...styles.paymentPanel, ...(isMobile ? styles.paymentPanelMobile : {}) }}>
               <div>
                 <h2 style={styles.sectionTitle}>Pay Using UPI QR</h2>
                 <p style={styles.bodyText}>
-                  Scan the QR code, pay the exact amount, then enter the UPI transaction ID.
+                  Scan the QR code, pay the auto-filled amount, then enter the UPI transaction ID.
                   Admin will verify it before confirming your ticket.
                 </p>
-                <div style={styles.infoRow}>
+                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Payee</span>
                   <strong>{paymentOrder.payment.payeeName}</strong>
                 </div>
-                <div style={styles.infoRow}>
+                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>UPI ID</span>
                   <strong>{paymentOrder.payment.upiId}</strong>
                 </div>
-                <div style={styles.infoRow}>
+                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
+                  <span>UPI Number</span>
+                  <strong>{paymentOrder.payment.upiNumber}</strong>
+                </div>
+                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Tickets</span>
                   <strong>{paymentOrder.event.ticket_price} x {paymentOrder.quantity}</strong>
                 </div>
-                <div style={styles.infoRow}>
+                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Total amount to pay</span>
                   <strong>Rs. {paymentOrder.amount}</strong>
                 </div>
@@ -272,7 +280,12 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background: "#F4F7F3",
-    padding: "32px"
+    padding: "32px",
+    boxSizing: "border-box",
+    overflowX: "hidden"
+  },
+  pageMobile: {
+    padding: "18px 16px"
   },
   shell: {
     maxWidth: "1120px",
@@ -299,6 +312,9 @@ const styles = {
     padding: "38px",
     maxWidth: "760px"
   },
+  heroContentMobile: {
+    padding: "24px"
+  },
   badge: {
     display: "inline-block",
     background: "rgba(255,255,255,0.16)",
@@ -313,6 +329,9 @@ const styles = {
     lineHeight: 1.15,
     margin: "18px 0 10px"
   },
+  titleMobile: {
+    fontSize: "28px"
+  },
   description: {
     fontSize: "16px",
     lineHeight: 1.6,
@@ -324,6 +343,9 @@ const styles = {
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
     gap: "14px",
     marginTop: "28px"
+  },
+  metaGridMobile: {
+    gridTemplateColumns: "1fr"
   },
   metaItem: {
     background: "rgba(255,255,255,0.12)",
@@ -349,6 +371,10 @@ const styles = {
     gap: "22px",
     marginTop: "24px"
   },
+  bookingLayoutMobile: {
+    gridTemplateColumns: "1fr",
+    gap: "16px"
+  },
   detailsPanel: {
     background: "#fff",
     border: "1px solid #DFE7DA",
@@ -372,6 +398,12 @@ const styles = {
     borderTop: "1px solid #E6EDE1",
     padding: "16px 0",
     color: "#34402F"
+  },
+  infoRowMobile: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    gap: "6px",
+    overflowWrap: "anywhere"
   },
   checkoutPanel: {
     background: "#fff",
@@ -400,6 +432,10 @@ const styles = {
     justifyContent: "space-between",
     gap: "16px",
     marginBottom: "20px"
+  },
+  quantityHeaderMobile: {
+    alignItems: "stretch",
+    flexDirection: "column"
   },
   quantityLabel: {
     color: "#34402F",
@@ -460,6 +496,10 @@ const styles = {
     borderRadius: "8px",
     padding: "26px",
     boxShadow: "0 12px 26px rgba(31, 58, 26, 0.12)"
+  },
+  paymentPanelMobile: {
+    gridTemplateColumns: "1fr",
+    padding: "20px"
   },
   qrPanel: {
     display: "flex",

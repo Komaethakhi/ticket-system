@@ -7,8 +7,9 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const { authMiddleware } = require("../middleware/auth");
 
-const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "your-upi-id@bank";
-const PAYMENT_PAYEE_NAME = process.env.PAYMENT_PAYEE_NAME || "Herbalife Training Portal";
+const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "9842426546@axisbank";
+const PAYMENT_UPI_NUMBER = process.env.PAYMENT_UPI_NUMBER || "9842426546";
+const PAYMENT_PAYEE_NAME = process.env.PAYMENT_PAYEE_NAME || "ANANTH";
 
 const buildUpiLink = ({ amount, orderId }) => {
   const params = new URLSearchParams({
@@ -53,7 +54,6 @@ router.post("/create", authMiddleware, async (req, res) => {
 
     const upiLink = buildUpiLink({ amount, orderId: order._id });
     const qrCode = await QRCode.toDataURL(upiLink);
-
     res.json({
       success: true,
       orderId: order._id,
@@ -62,6 +62,7 @@ router.post("/create", authMiddleware, async (req, res) => {
       payment: {
         method: "UPI_QR",
         upiId: PAYMENT_UPI_ID,
+        upiNumber: PAYMENT_UPI_NUMBER,
         payeeName: PAYMENT_PAYEE_NAME,
         upiLink,
         qrCode
