@@ -31,7 +31,14 @@ function AdminDashboard() {
     loadSummary();
   }, []);
 
+  const canBookTickets = Boolean(sessionStorage.getItem("token"));
+
   const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("userId");
+    sessionStorage.removeItem("coachId");
+    sessionStorage.removeItem("coachLoggedIn");
+    sessionStorage.removeItem("role");
     sessionStorage.removeItem("adminToken");
     sessionStorage.removeItem("adminUsername");
     navigate("/admin/login", { replace: true });
@@ -104,6 +111,11 @@ function AdminDashboard() {
           <p>Live confirmed ticket orders from the database.</p>
         </div>
         <div className="admin-dashboard-actions">
+          {canBookTickets && (
+            <button onClick={() => navigate("/")} className="admin-primary-button">
+              Book Tickets
+            </button>
+          )}
           <button onClick={loadSummary} className="admin-secondary-button">Refresh</button>
           <button onClick={handleExport} className="admin-primary-button" disabled={downloading}>
             {downloading ? "Preparing..." : "Download Excel"}

@@ -39,9 +39,11 @@ function Login() {
       sessionStorage.setItem("role", res.data.role || "coach");
 
       if (res.data.role === "admin") {
+        sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("coachLoggedIn", "true");
         sessionStorage.setItem("adminToken", res.data.token);
         sessionStorage.setItem("adminUsername", res.data.coachId);
-        navigate("/admin", { replace: true });
+        navigate("/", { replace: true });
         return;
       }
 
