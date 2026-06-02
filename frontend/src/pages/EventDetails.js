@@ -10,6 +10,9 @@ function TrainingDetails() {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [paymentOrder, setPaymentOrder] = useState(null);
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
 
   useEffect(() => {
     const loadTraining = async () => {
@@ -45,21 +48,6 @@ function TrainingDetails() {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
-  const saveTicketLocally = (order) => {
-    const ticket = {
-      id: order._id,
-      title: order.eventId.title,
-      date: order.eventId.date,
-      location: order.eventId.location,
-      price: order.eventId.ticket_price,
-      quantity: order.quantity,
-      total: order.amount,
-      paymentId: order.payment_id
-    };
-    const existingTickets = JSON.parse(localStorage.getItem("myTickets")) || [];
-    localStorage.setItem("myTickets", JSON.stringify([ticket, ...existingTickets]));
-  };
-
   const handleBook = async () => {
     try {
       const coachId = sessionStorage.getItem("coachId");
@@ -69,60 +57,45 @@ function TrainingDetails() {
         return;
       }
 
-      if (!window.Razorpay) {
-        alert("Payment gateway is still loading. Try again in a few seconds.");
-        return;
-      }
-
       setPaying(true);
+      setPaymentMessage("");
       const orderRes = await api.post("/orders/create", {
         eventId: training._id,
         quantity
       });
 
-      const { key, orderId, razorpayOrder } = orderRes.data;
-
-      const options = {
-        key,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        name: "Herbalife Training Portal",
-        description: training.title,
-        order_id: razorpayOrder.id,
-        prefill: {
-          name: coachId
-        },
-        theme: {
-          color: "#7AC143"
-        },
-        handler: async (response) => {
-          try {
-            const verifyRes = await api.post("/orders/success", {
-              orderId,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
-            });
-
-            saveTicketLocally(verifyRes.data.order);
-            alert("Payment successful. Ticket booked.");
-            navigate("/my-tickets");
-          } catch (err) {
-            alert(err.response?.data?.message || "Payment verification failed");
-          } finally {
-            setPaying(false);
-          }
-        },
-        modal: {
-          ondismiss: () => setPaying(false)
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+      setPaymentOrder(orderRes.data);
+      setTransactionId("");
     } catch (err) {
-      setPaying(false);
       alert(err.response?.data?.message || "Payment failed");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleSubmitPayment = async (e) => {
+    e.preventDefault();
+
+    if (!paymentOrder?.orderId) {
+      setPaymentMessage("Create an order before submitting payment details.");
+      return;
+    }
+
+    try {
+      setPaying(true);
+      setPaymentMessage("");
+      await api.post("/orders/submit-payment", {
+        orderId: paymentOrder.orderId,
+        transactionId
+      });
+      setPaymentMessage("Payment submitted. Admin will verify and confirm your ticket.");
+      setPaymentOrder(null);
+      setTransactionId("");
+      navigate("/my-tickets");
+    } catch (err) {
+      setPaymentMessage(err.response?.data?.message || "Payment submission failed");
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -192,7 +165,7 @@ function TrainingDetails() {
               </div>
               <div style={styles.infoRow}>
                 <span>Booking status</span>
-                <strong>Payment required</strong>
+                <strong>Manual payment verification</strong>
               </div>
             </div>
 
@@ -219,10 +192,62 @@ function TrainingDetails() {
               </div>
 
               <button disabled={paying} style={styles.bookBtn} onClick={handleBook}>
-                {paying ? "Opening Payment..." : "Pay & Book Training"}
+                {paying ? "Preparing QR..." : "Show Payment QR"}
               </button>
             </aside>
           </section>
+
+          {paymentOrder && (
+            <section style={styles.paymentPanel}>
+              <div>
+                <h2 style={styles.sectionTitle}>Pay Using UPI QR</h2>
+                <p style={styles.bodyText}>
+                  Scan the QR code, pay the exact amount, then enter the UPI transaction ID.
+                  Admin will verify it before confirming your ticket.
+                </p>
+                <div style={styles.infoRow}>
+                  <span>Payee</span>
+                  <strong>{paymentOrder.payment.payeeName}</strong>
+                </div>
+                <div style={styles.infoRow}>
+                  <span>UPI ID</span>
+                  <strong>{paymentOrder.payment.upiId}</strong>
+                </div>
+                <div style={styles.infoRow}>
+                  <span>Amount</span>
+                  <strong>Rs. {paymentOrder.amount}</strong>
+                </div>
+              </div>
+
+              <div style={styles.qrPanel}>
+                <img
+                  src={paymentOrder.payment.qrCode}
+                  alt="UPI payment QR code"
+                  style={styles.qrImage}
+                />
+                <a href={paymentOrder.payment.upiLink} style={styles.upiLink}>
+                  Open UPI App
+                </a>
+              </div>
+
+              <form onSubmit={handleSubmitPayment} style={styles.transactionForm}>
+                <label style={styles.inputLabel} htmlFor="transactionId">
+                  UPI Transaction ID
+                </label>
+                <input
+                  id="transactionId"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
+                  placeholder="Enter transaction/reference ID"
+                  style={styles.transactionInput}
+                />
+                {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
+                <button disabled={paying} style={styles.bookBtn}>
+                  {paying ? "Submitting..." : "Submit for Verification"}
+                </button>
+              </form>
+            </section>
+          )}
         </div>
       </main>
     </>
@@ -410,6 +435,56 @@ const styles = {
     cursor: "pointer",
     fontSize: 16,
     fontWeight: "800"
+  },
+  paymentPanel: {
+    display: "grid",
+    gridTemplateColumns: "1fr 240px",
+    gap: "22px",
+    marginTop: "24px",
+    background: "#fff",
+    border: "1px solid #DFE7DA",
+    borderRadius: "8px",
+    padding: "26px",
+    boxShadow: "0 12px 26px rgba(31, 58, 26, 0.12)"
+  },
+  qrPanel: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "12px"
+  },
+  qrImage: {
+    width: "220px",
+    maxWidth: "100%",
+    border: "1px solid #DFE7DA",
+    borderRadius: "8px"
+  },
+  upiLink: {
+    color: "#2F8F15",
+    fontWeight: "800",
+    textDecoration: "none"
+  },
+  transactionForm: {
+    gridColumn: "1 / -1",
+    display: "grid",
+    gap: "10px"
+  },
+  inputLabel: {
+    color: "#34402F",
+    fontWeight: "800"
+  },
+  transactionInput: {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "13px 14px",
+    border: "1px solid #D5DED0",
+    borderRadius: "8px",
+    fontSize: "16px"
+  },
+  paymentMessage: {
+    margin: 0,
+    color: "#2F8F15",
+    fontWeight: "700"
   },
   muted: {
     color: "#5E6A59"

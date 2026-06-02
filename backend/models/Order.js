@@ -20,6 +20,20 @@ const orderSchema = new mongoose.Schema({
     type: String
   },
 
+  payment_method: {
+    type: String,
+    enum: ["RAZORPAY", "UPI_QR"],
+    default: "UPI_QR"
+  },
+
+  transaction_id: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    sparse: true,
+    unique: true
+  },
+
   razorpay_order_id: {
     type: String
   },
@@ -42,8 +56,21 @@ const orderSchema = new mongoose.Schema({
   // ticket status
   status: {
     type: String,
-    enum: ["PENDING", "CONFIRMED", "CANCELLED", "USED"],
+    enum: ["PENDING", "PENDING_VERIFICATION", "CONFIRMED", "REJECTED", "CANCELLED", "USED"],
     default: "PENDING"
+  },
+
+  submitted_at: {
+    type: Date
+  },
+
+  verified_at: {
+    type: Date
+  },
+
+  admin_note: {
+    type: String,
+    trim: true
   },
 
   // entry validation

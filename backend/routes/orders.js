@@ -1,18 +1,26 @@
-const crypto = require("crypto");
 const express = require("express");
-const Razorpay = require("razorpay");
+const QRCode = require("qrcode");
 const router = express.Router();
 
 const Event = require("../models/Event");
 const Order = require("../models/Order");
 const User = require("../models/User");
-const sendOrderMail = require("../utils/email");
 const { authMiddleware } = require("../middleware/auth");
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY,
-  key_secret: process.env.RAZORPAY_SECRET
-});
+const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "your-upi-id@bank";
+const PAYMENT_PAYEE_NAME = process.env.PAYMENT_PAYEE_NAME || "Herbalife Training Portal";
+
+const buildUpiLink = ({ amount, orderId }) => {
+  const params = new URLSearchParams({
+    pa: PAYMENT_UPI_ID,
+    pn: PAYMENT_PAYEE_NAME,
+    am: String(amount),
+    cu: "INR",
+    tn: `Ticket order ${orderId}`
+  });
+
+  return `upi://pay?${params.toString()}`;
+};
 
 router.post("/create", authMiddleware, async (req, res) => {
   const { eventId, quantity = 1 } = req.body;
@@ -39,23 +47,24 @@ router.post("/create", authMiddleware, async (req, res) => {
       eventId: event._id,
       amount,
       quantity: ticketCount,
+      payment_method: "UPI_QR",
       status: "PENDING"
     });
 
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amount * 100,
-      currency: "INR",
-      receipt: `ORD_${order._id}`
-    });
-
-    order.razorpay_order_id = razorpayOrder.id;
-    await order.save();
+    const upiLink = buildUpiLink({ amount, orderId: order._id });
+    const qrCode = await QRCode.toDataURL(upiLink);
 
     res.json({
       success: true,
-      key: process.env.RAZORPAY_KEY,
       orderId: order._id,
-      razorpayOrder,
+      amount,
+      payment: {
+        method: "UPI_QR",
+        upiId: PAYMENT_UPI_ID,
+        payeeName: PAYMENT_PAYEE_NAME,
+        upiLink,
+        qrCode
+      },
       event: {
         title: event.title,
         ticket_price: event.ticket_price,
@@ -69,32 +78,27 @@ router.post("/create", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/success", authMiddleware, async (req, res) => {
-  const {
-    orderId,
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature
-  } = req.body;
+router.post("/submit-payment", authMiddleware, async (req, res) => {
+  const { orderId, transactionId } = req.body;
+  const normalizedTransactionId = String(transactionId || "").trim().toUpperCase();
 
-  if (!orderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return res.status(400).json({ message: "Payment verification details are required" });
+  if (!orderId || !normalizedTransactionId || normalizedTransactionId.length < 6) {
+    return res.status(400).json({ message: "Valid transaction ID is required" });
   }
 
   try {
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
+    const duplicate = await Order.findOne({
+      transaction_id: normalizedTransactionId,
+      _id: { $ne: orderId }
+    });
 
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: "Payment verification failed" });
+    if (duplicate) {
+      return res.status(409).json({ message: "This transaction ID is already submitted" });
     }
 
     const order = await Order.findOne({
       _id: orderId,
-      userId: req.user.userId,
-      razorpay_order_id
+      userId: req.user.userId
     })
       .populate("eventId")
       .populate("userId");
@@ -103,29 +107,34 @@ router.post("/success", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    order.payment_id = razorpay_payment_id;
-    order.razorpay_signature = razorpay_signature;
-    order.status = "CONFIRMED";
-    await order.save();
-
-    if (order.userId.email) {
-      await sendOrderMail(order.userId.email, order, order.eventId);
+    if (order.status === "CONFIRMED") {
+      return res.status(400).json({ message: "This order is already confirmed" });
     }
+
+    order.payment_id = normalizedTransactionId;
+    order.transaction_id = normalizedTransactionId;
+    order.payment_method = "UPI_QR";
+    order.status = "PENDING_VERIFICATION";
+    order.submitted_at = new Date();
+    await order.save();
 
     res.json({
       success: true,
-      message: "Payment successful",
+      message: "Payment submitted for admin verification",
       order
     });
   } catch (err) {
-    console.error("Payment success error:", err);
-    res.status(500).json({ message: "Payment confirmation failed" });
+    console.error("Submit payment error:", err);
+    res.status(500).json({ message: "Payment submission failed" });
   }
 });
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.user.userId, status: "CONFIRMED" })
+    const orders = await Order.find({
+      userId: req.user.userId,
+      status: { $in: ["PENDING_VERIFICATION", "CONFIRMED", "REJECTED"] }
+    })
       .populate("eventId")
       .sort({ booked_at: -1 });
 

@@ -17,7 +17,10 @@ function MyTickets() {
           location: order.eventId.location,
           quantity: order.quantity,
           total: order.amount,
-          paymentId: order.payment_id
+          paymentId: order.payment_id,
+          transactionId: order.transaction_id,
+          status: order.status,
+          adminNote: order.admin_note
         }));
         setTickets(paidTickets);
         localStorage.setItem("myTickets", JSON.stringify(paidTickets));
@@ -47,16 +50,25 @@ function MyTickets() {
             <p>{t.date}</p>
             <p>{t.location}</p>
             <p>Quantity: {t.quantity}</p>
+            <p>Status: <b>{formatStatus(t.status)}</b></p>
             <p>
               <b>Rs. {t.total}</b>
             </p>
-            {t.paymentId && <p>Payment ID: {t.paymentId}</p>}
+            {t.transactionId && <p>Transaction ID: {t.transactionId}</p>}
+            {t.adminNote && <p>Admin note: {t.adminNote}</p>}
           </div>
         ))}
       </div>
     </>
   );
 }
+
+const formatStatus = (status) => {
+  if (status === "PENDING_VERIFICATION") return "Pending admin verification";
+  if (status === "CONFIRMED") return "Confirmed";
+  if (status === "REJECTED") return "Payment rejected";
+  return status || "Pending";
+};
 
 const styles = {
   card: {

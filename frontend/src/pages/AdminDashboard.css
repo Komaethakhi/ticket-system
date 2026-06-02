@@ -97,7 +97,7 @@
   max-width: 1180px;
   margin: 0 auto 24px;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -232,6 +232,37 @@
 .admin-coach-form-actions button:disabled {
   cursor: wait;
   opacity: 0.76;
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-approve-button,
+.admin-reject-button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-approve-button {
+  background: #2f8f46;
+}
+
+.admin-reject-button {
+  background: #b42318;
+}
+
+.admin-approve-button:disabled,
+.admin-reject-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 @media (max-width: 820px) {

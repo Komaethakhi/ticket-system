@@ -11,6 +11,7 @@ function AdminDashboard() {
   const [coachIds, setCoachIds] = useState("");
   const [addingCoachIds, setAddingCoachIds] = useState(false);
   const [coachIdMessage, setCoachIdMessage] = useState("");
+  const [verifyingOrderId, setVerifyingOrderId] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async () => {
@@ -76,9 +77,23 @@ function AdminDashboard() {
     }
   };
 
+  const handleVerifyOrder = async (orderId, action) => {
+    try {
+      setVerifyingOrderId(orderId);
+      setError("");
+      await api.post(`/admin/orders/${orderId}/${action}`);
+      await loadSummary();
+    } catch (err) {
+      setError(err.response?.data?.message || `Failed to ${action} payment`);
+    } finally {
+      setVerifyingOrderId("");
+    }
+  };
+
   const totals = data?.totals || {};
   const coachSummary = data?.coachSummary || [];
   const orders = data?.orders || [];
+  const pendingOrders = data?.pendingOrders || [];
 
   return (
     <main className="admin-dashboard-page">
@@ -116,6 +131,10 @@ function AdminDashboard() {
               <strong>{totals.totalOrders || 0}</strong>
             </article>
             <article>
+              <span>Pending Review</span>
+              <strong>{totals.pendingVerifications || 0}</strong>
+            </article>
+            <article>
               <span>Unique IDs</span>
               <strong>{totals.uniqueCoaches || 0}</strong>
             </article>
@@ -123,6 +142,65 @@ function AdminDashboard() {
               <span>Registered IDs</span>
               <strong>{totals.registeredCoachIds || 0}</strong>
             </article>
+          </section>
+
+          <section className="admin-section">
+            <div className="admin-section-title">
+              <div>
+                <h2>Pending Payment Verification</h2>
+                <p>Verify the UPI transaction in the bank/UPI app before approving.</p>
+              </div>
+            </div>
+            <div className="admin-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Herbalife ID</th>
+                    <th>Training</th>
+                    <th>Qty</th>
+                    <th>Amount</th>
+                    <th>Transaction ID</th>
+                    <th>Submitted At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingOrders.map((order) => (
+                    <tr key={order.orderId}>
+                      <td>{order.coachId}</td>
+                      <td>{order.eventTitle}</td>
+                      <td>{order.quantity}</td>
+                      <td>Rs. {order.amount}</td>
+                      <td>{order.transactionId || "-"}</td>
+                      <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
+                      <td>
+                        <div className="admin-row-actions">
+                          <button
+                            className="admin-approve-button"
+                            disabled={verifyingOrderId === order.orderId}
+                            onClick={() => handleVerifyOrder(order.orderId, "approve")}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="admin-reject-button"
+                            disabled={verifyingOrderId === order.orderId}
+                            onClick={() => handleVerifyOrder(order.orderId, "reject")}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {pendingOrders.length === 0 && (
+                    <tr>
+                      <td colSpan="7">No pending payments.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <section className="admin-section">
