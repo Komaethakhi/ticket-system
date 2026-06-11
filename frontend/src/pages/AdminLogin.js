@@ -22,6 +22,12 @@ function AdminLogin() {
       sessionStorage.removeItem("userId");
       sessionStorage.removeItem("coachId");
       sessionStorage.removeItem("coachLoggedIn");
+      sessionStorage.removeItem("role");
+      sessionStorage.setItem("token", res.data.token);
+      sessionStorage.setItem("userId", res.data.userId);
+      sessionStorage.setItem("coachId", res.data.coachId);
+      sessionStorage.setItem("role", res.data.role || "admin");
+      sessionStorage.setItem("coachLoggedIn", "true");
       sessionStorage.setItem("adminToken", res.data.token);
       sessionStorage.setItem("adminUsername", res.data.username);
 

@@ -234,6 +234,41 @@
   opacity: 0.76;
 }
 
+.admin-coach-result {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-coach-result-group {
+  padding: 12px;
+  border: 1px solid #dfe7da;
+  border-radius: 8px;
+  background: #fbfdf9;
+}
+
+.admin-coach-result-group strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #344054;
+  font-size: 13px;
+}
+
+.admin-coach-result-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.admin-coach-result-list span {
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #eef6e9;
+  color: #1f4d2c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .admin-row-actions {
   display: flex;
   gap: 8px;
@@ -259,6 +294,19 @@
   background: #b42318;
 }
 
+.admin-whatsapp-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border-radius: 8px;
+  background: #1fa855;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .admin-approve-button:disabled,
 .admin-reject-button:disabled {
   opacity: 0.7;
@@ -277,6 +325,10 @@
 
   .admin-dashboard-actions {
     justify-content: flex-start;
+  }
+
+  .admin-coach-result {
+    grid-template-columns: 1fr;
   }
 
   .admin-metrics-grid {

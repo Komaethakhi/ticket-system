@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+
+const getEventImage = (title) => {
+  if (String(title || "").toUpperCase() === "WELLNESS SEMINAR") {
+    return "/events/wellness-seminar.jpeg?v=2";
+  }
+
+  return "";
+};
 
 function Home() {
   const [trainings, setTrainings] = useState([]);
@@ -52,7 +61,7 @@ function Home() {
           </div>
         </section>
 
-        {loading && <p style={styles.loading}>Loading events...</p>}
+        {loading && <LoadingSpinner fullHeight />}
 
         {!loading && trainings.length === 0 && (
           <div style={styles.emptyBox}>
@@ -62,36 +71,47 @@ function Home() {
         )}
 
         <div style={{ ...styles.grid, ...(isMobile ? styles.gridMobile : {}) }}>
-          {trainings.map((t) => (
-            <article key={t._id} style={styles.card}>
-              <div style={styles.cardTop}>
-                <span style={styles.cardBadge}>Open</span>
-                <strong style={styles.price}>Rs. {t.ticket_price}</strong>
-              </div>
+          {trainings.map((t) => {
+            const eventImage = getEventImage(t.title);
 
-              <h3 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
-                {t.title}
-              </h3>
-              <p style={styles.desc}>{t.description}</p>
-
-              <div style={{ ...styles.metaList, ...(isMobile ? styles.metaListMobile : {}) }}>
-                <div style={styles.metaItem}>
-                  <span style={styles.metaLabel}>Date</span>
-                  <strong>{t.date}</strong>
+            return (
+              <article key={t._id} style={styles.card}>
+                {eventImage && (
+                  <img
+                    src={eventImage}
+                    alt={`${t.title} poster`}
+                    style={styles.cardImage}
+                  />
+                )}
+                <div style={styles.cardTop}>
+                  <span style={styles.cardBadge}>Open</span>
+                  <strong style={styles.price}>Rs. {t.ticket_price}</strong>
                 </div>
-                <div style={styles.metaItem}>
-                  <span style={styles.metaLabel}>Location</span>
-                  <strong>{t.location}</strong>
-                </div>
-              </div>
 
-              <Link to={`/training/${t._id}`} style={styles.link}>
-                <button style={styles.button}>
-                  View Event
-                </button>
-              </Link>
-            </article>
-          ))}
+                <h3 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
+                  {t.title}
+                </h3>
+                <p style={styles.desc}>{t.description}</p>
+
+                <div style={{ ...styles.metaList, ...(isMobile ? styles.metaListMobile : {}) }}>
+                  <div style={styles.metaItem}>
+                    <span style={styles.metaLabel}>Date</span>
+                    <strong>{t.date}</strong>
+                  </div>
+                  <div style={styles.metaItem}>
+                    <span style={styles.metaLabel}>Location</span>
+                    <strong>{t.location}</strong>
+                  </div>
+                </div>
+
+                <Link to={`/training/${t._id}`} style={styles.link}>
+                  <button style={styles.button}>
+                    View Event
+                  </button>
+                </Link>
+              </article>
+            );
+          })}
         </div>
       </main>
     </>
@@ -193,11 +213,6 @@ const styles = {
     margin: "6px 0 0",
     color: "#5E6A59"
   },
-  loading: {
-    maxWidth: "1120px",
-    margin: "0 auto",
-    color: "#5E6A59"
-  },
   emptyBox: {
     maxWidth: "1120px",
     margin: "0 auto",
@@ -223,6 +238,16 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #DFE7DA",
     boxShadow: "0 10px 24px rgba(31, 58, 26, 0.09)"
+  },
+  cardImage: {
+    width: "100%",
+    aspectRatio: "4 / 5",
+    objectFit: "cover",
+    objectPosition: "center top",
+    borderRadius: "8px",
+    display: "block",
+    marginBottom: "18px",
+    border: "1px solid #DFE7DA"
   },
   cardTop: {
     display: "flex",

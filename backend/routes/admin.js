@@ -9,6 +9,7 @@ const { JWT_SECRET } = require("../middleware/auth");
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@123";
+const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C937193").toUpperCase();
 
 const adminAuthMiddleware = (req, res, next) => {
   try {
@@ -44,17 +45,98 @@ const escapeCsv = (value) => {
   return text;
 };
 
+const buildWhatsAppMessage = (order) =>
+  [
+    "Congratulations! Your order was placed successfully.",
+    `Order ID: ${order._id}`,
+    `Herbalife ID: ${order.userId?.coachId || "Unknown"}`,
+    `Training: ${order.eventId?.title || "Unknown event"}`,
+    `Date: ${order.eventId?.date || ""}`,
+    `Location: ${order.eventId?.location || ""}`,
+    `Tickets: ${order.quantity}`,
+    `Amount: Rs. ${order.amount}`,
+    `Status: ${order.status}`
+  ].join("\n");
+
+const buildWhatsAppLink = (order) => {
+  if (!order.whatsapp_number) {
+    return "";
+  }
+
+  const number = order.whatsapp_number.startsWith("91")
+    ? order.whatsapp_number
+    : `91${order.whatsapp_number}`;
+
+  return `https://wa.me/${number}?text=${encodeURIComponent(buildWhatsAppMessage(order))}`;
+};
+
+const parseEventEndDate = (eventDate) => {
+  const match = String(eventDate || "").trim().match(/^(\d{1,2})\s+([A-Z]+)\s+(\d{4})$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  const months = {
+    JANUARY: 0,
+    FEBRUARY: 1,
+    MARCH: 2,
+    APRIL: 3,
+    MAY: 4,
+    JUNE: 5,
+    JULY: 6,
+    AUGUST: 7,
+    SEPTEMBER: 8,
+    OCTOBER: 9,
+    NOVEMBER: 10,
+    DECEMBER: 11
+  };
+  const day = Number(match[1]);
+  const month = months[match[2].toUpperCase()];
+  const year = Number(match[3]);
+
+  if (!Number.isInteger(day) || month === undefined || !Number.isInteger(year)) {
+    return null;
+  }
+
+  return new Date(year, month, day, 23, 59, 59, 999);
+};
+
+const isEventOver = (eventDate) => {
+  const endDate = parseEventEndDate(eventDate);
+  return Boolean(endDate && endDate < new Date());
+};
+
 const getConfirmedOrders = () =>
   Order.find({ status: "CONFIRMED" })
     .populate("userId", "coachId")
     .populate("eventId", "title date location ticket_price")
     .sort({ booked_at: -1 });
 
-const getPendingOrders = () =>
-  Order.find({ status: "PENDING_VERIFICATION" })
+const getPendingOrders = async () => {
+  const pendingOrders = await Order.find({ status: "PENDING_VERIFICATION" })
     .populate("userId", "coachId")
     .populate("eventId", "title date location ticket_price")
     .sort({ submitted_at: -1, booked_at: -1 });
+
+  const expiredPendingOrders = pendingOrders.filter((order) =>
+    isEventOver(order.eventId?.date)
+  );
+
+  if (expiredPendingOrders.length > 0) {
+    await Order.updateMany(
+      { _id: { $in: expiredPendingOrders.map((order) => order._id) } },
+      {
+        $set: {
+          status: "CANCELLED",
+          admin_note: "Event ended before payment verification"
+        }
+      }
+    );
+  }
+
+  return pendingOrders.filter((order) => !isEventOver(order.eventId?.date));
+};
 
 const formatOrder = (order) => ({
   orderId: order._id,
@@ -67,6 +149,8 @@ const formatOrder = (order) => ({
   amount: order.amount,
   paymentId: order.payment_id || "",
   transactionId: order.transaction_id || "",
+  whatsappNumber: order.whatsapp_number || "",
+  whatsappLink: buildWhatsAppLink(order),
   paymentMethod: order.payment_method || "",
   status: order.status,
   bookedAt: order.booked_at,
@@ -75,20 +159,43 @@ const formatOrder = (order) => ({
   adminNote: order.admin_note || ""
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ message: "Invalid admin credentials" });
   }
 
-  const token = jwt.sign(
-    { role: "admin", username: ADMIN_USERNAME },
-    JWT_SECRET,
-    { expiresIn: "1d" }
-  );
+  try {
+    let adminUser = await User.findOne({ coachId: ADMIN_COACH_ID });
 
-  res.json({ success: true, token, username: ADMIN_USERNAME });
+    if (!adminUser) {
+      adminUser = await User.create({ coachId: ADMIN_COACH_ID });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: adminUser._id,
+        coachId: adminUser.coachId,
+        role: "admin",
+        username: ADMIN_USERNAME
+      },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      success: true,
+      token,
+      username: ADMIN_USERNAME,
+      userId: adminUser._id,
+      coachId: adminUser.coachId,
+      role: "admin"
+    });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.status(500).json({ message: "Admin login failed" });
+  }
 });
 
 router.get("/summary", adminAuthMiddleware, async (req, res) => {
@@ -153,6 +260,17 @@ router.post("/orders/:id/approve", adminAuthMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Only pending payments can be approved" });
     }
 
+    if (isEventOver(order.eventId?.date)) {
+      order.status = "CANCELLED";
+      order.admin_note = "Event ended before payment verification";
+      await order.save();
+      return res.status(400).json({
+        code: "EVENT_OVER",
+        orderId: order._id,
+        message: "This event is already over. Pending payment was removed."
+      });
+    }
+
     order.status = "CONFIRMED";
     order.verified_at = new Date();
     order.admin_note = req.body.note || "";
@@ -183,6 +301,17 @@ router.post("/orders/:id/reject", adminAuthMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Only pending payments can be rejected" });
     }
 
+    if (isEventOver(order.eventId?.date)) {
+      order.status = "CANCELLED";
+      order.admin_note = "Event ended before payment verification";
+      await order.save();
+      return res.status(400).json({
+        code: "EVENT_OVER",
+        orderId: order._id,
+        message: "This event is already over. Pending payment was removed."
+      });
+    }
+
     order.status = "REJECTED";
     order.verified_at = new Date();
     order.admin_note = req.body.note || "Payment could not be verified";
@@ -201,13 +330,22 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
       ? req.body.coachIds
       : String(req.body.coachIds || "").split(/[\s,;]+/);
 
-    const uniqueCoachIds = Array.from(
-      new Set(
-        rawCoachIds
-          .map((coachId) => String(coachId || "").trim().toUpperCase())
-          .filter(Boolean)
-      )
-    );
+    const normalizedCoachIds = rawCoachIds
+      .map((coachId) => String(coachId || "").trim().toUpperCase())
+      .filter(Boolean);
+    const seenCoachIds = new Set();
+    const duplicateCoachIds = [];
+    const uniqueCoachIds = [];
+
+    normalizedCoachIds.forEach((coachId) => {
+      if (seenCoachIds.has(coachId)) {
+        duplicateCoachIds.push(coachId);
+        return;
+      }
+
+      seenCoachIds.add(coachId);
+      uniqueCoachIds.push(coachId);
+    });
 
     const invalidCoachIds = uniqueCoachIds.filter(
       (coachId) => !/^[A-Z0-9]{9,10}$/.test(coachId)
@@ -220,7 +358,9 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
       return res.status(400).json({
         message: "Enter at least one valid 9 or 10 character Herbalife ID",
         added: [],
-        skipped: [],
+        skipped: duplicateCoachIds,
+        duplicate: duplicateCoachIds,
+        existing: [],
         invalid: invalidCoachIds
       });
     }
@@ -240,7 +380,9 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
     res.status(201).json({
       success: true,
       added: newCoachIds,
-      skipped: Array.from(existingCoachIds),
+      skipped: [...Array.from(existingCoachIds), ...duplicateCoachIds],
+      duplicate: duplicateCoachIds,
+      existing: Array.from(existingCoachIds),
       invalid: invalidCoachIds
     });
   } catch (err) {
@@ -264,6 +406,7 @@ router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
       "Quantity",
       "Amount",
       "Payment ID",
+      "WhatsApp Number",
       "Status",
       "Booked At"
     ];
@@ -281,6 +424,7 @@ router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
           row.quantity,
           row.amount,
           row.paymentId,
+          row.whatsappNumber,
           row.status,
           row.bookedAt ? new Date(row.bookedAt).toISOString() : ""
         ]

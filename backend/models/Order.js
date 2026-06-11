@@ -34,6 +34,11 @@ const orderSchema = new mongoose.Schema({
     unique: true
   },
 
+  whatsapp_number: {
+    type: String,
+    trim: true
+  },
+
   razorpay_order_id: {
     type: String
   },

@@ -81,11 +81,16 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 router.post("/submit-payment", authMiddleware, async (req, res) => {
-  const { orderId, transactionId } = req.body;
+  const { orderId, transactionId, whatsappNumber } = req.body;
   const normalizedTransactionId = String(transactionId || "").trim().toUpperCase();
+  const normalizedWhatsappNumber = String(whatsappNumber || "").replace(/\D/g, "");
 
   if (!orderId || !normalizedTransactionId || normalizedTransactionId.length < 6) {
     return res.status(400).json({ message: "Valid transaction ID is required" });
+  }
+
+  if (normalizedWhatsappNumber && (normalizedWhatsappNumber.length < 10 || normalizedWhatsappNumber.length > 15)) {
+    return res.status(400).json({ message: "Enter a valid WhatsApp number" });
   }
 
   try {
@@ -115,6 +120,7 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
 
     order.payment_id = normalizedTransactionId;
     order.transaction_id = normalizedTransactionId;
+    order.whatsapp_number = normalizedWhatsappNumber;
     order.payment_method = "UPI_QR";
     order.status = "PENDING_VERIFICATION";
     order.submitted_at = new Date();

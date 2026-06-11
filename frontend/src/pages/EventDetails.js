@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+
+const getEventImage = (title) => {
+  if (String(title || "").toUpperCase() === "WELLNESS SEMINAR") {
+    return "/events/wellness-seminar.jpeg?v=2";
+  }
+
+  return "";
+};
 
 function TrainingDetails() {
   const { id } = useParams();
@@ -13,6 +22,7 @@ function TrainingDetails() {
   const [paying, setPaying] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
   const [transactionId, setTransactionId] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const isMobile = useIsMobile();
 
@@ -47,6 +57,7 @@ function TrainingDetails() {
       setQuantity(quantity + 1);
       setPaymentOrder(null);
       setTransactionId("");
+      setWhatsappNumber("");
       setPaymentMessage("");
     }
   };
@@ -56,6 +67,7 @@ function TrainingDetails() {
       setQuantity(quantity - 1);
       setPaymentOrder(null);
       setTransactionId("");
+      setWhatsappNumber("");
       setPaymentMessage("");
     }
   };
@@ -98,11 +110,13 @@ function TrainingDetails() {
       setPaymentMessage("");
       await api.post("/orders/submit-payment", {
         orderId: paymentOrder.orderId,
-        transactionId
+        transactionId,
+        whatsappNumber
       });
       setPaymentMessage("Payment submitted. Admin will verify and confirm your ticket.");
       setPaymentOrder(null);
       setTransactionId("");
+      setWhatsappNumber("");
       navigate("/my-tickets");
     } catch (err) {
       setPaymentMessage(err.response?.data?.message || "Payment submission failed");
@@ -117,7 +131,7 @@ function TrainingDetails() {
         <Navbar />
         <div style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
           <div style={styles.shell}>
-            <p style={styles.muted}>Loading event...</p>
+            <LoadingSpinner fullHeight />
           </div>
         </div>
       </>
@@ -137,6 +151,8 @@ function TrainingDetails() {
     );
   }
 
+  const eventImage = getEventImage(training.title);
+
   return (
     <>
       <Navbar />
@@ -146,7 +162,13 @@ function TrainingDetails() {
             Back
           </button>
 
-          <section style={styles.hero}>
+          <section
+            style={{
+              ...styles.hero,
+              ...(eventImage ? styles.heroWithImage : {}),
+              ...(eventImage && isMobile ? styles.heroWithImageMobile : {})
+            }}
+          >
             <div style={{ ...styles.heroContent, ...(isMobile ? styles.heroContentMobile : {}) }}>
               <span style={styles.badge}>Event Booking</span>
               <h1 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
@@ -165,6 +187,15 @@ function TrainingDetails() {
                 </div>
               </div>
             </div>
+            {eventImage && (
+              <div style={styles.heroImageWrap}>
+                <img
+                  src={eventImage}
+                  alt={`${training.title} poster`}
+                  style={styles.heroImage}
+                />
+              </div>
+            )}
           </section>
 
           <section style={{ ...styles.bookingLayout, ...(isMobile ? styles.bookingLayoutMobile : {}) }}>
@@ -253,6 +284,16 @@ function TrainingDetails() {
               </div>
 
               <form onSubmit={handleSubmitPayment} style={styles.transactionForm}>
+                <label style={styles.inputLabel} htmlFor="whatsappNumber">
+                  WhatsApp Number
+                </label>
+                <input
+                  id="whatsappNumber"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, "").slice(0, 15))}
+                  placeholder="Enter WhatsApp number"
+                  style={styles.transactionInput}
+                />
                 <label style={styles.inputLabel} htmlFor="transactionId">
                   UPI Transaction ID
                 </label>
@@ -308,12 +349,31 @@ const styles = {
     overflow: "hidden",
     boxShadow: "0 14px 34px rgba(35, 83, 34, 0.18)"
   },
+  heroWithImage: {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(260px, 380px)",
+    alignItems: "stretch"
+  },
+  heroWithImageMobile: {
+    gridTemplateColumns: "1fr"
+  },
   heroContent: {
     padding: "38px",
     maxWidth: "760px"
   },
   heroContentMobile: {
     padding: "24px"
+  },
+  heroImageWrap: {
+    minHeight: "360px",
+    background: "#0E3F1F"
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    objectPosition: "center top",
+    display: "block"
   },
   badge: {
     display: "inline-block",

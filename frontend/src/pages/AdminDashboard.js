@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import "./AdminDashboard.css";
 
@@ -11,19 +12,24 @@ function AdminDashboard() {
   const [coachIds, setCoachIds] = useState("");
   const [addingCoachIds, setAddingCoachIds] = useState(false);
   const [coachIdMessage, setCoachIdMessage] = useState("");
+  const [coachIdResult, setCoachIdResult] = useState(null);
   const [verifyingOrderId, setVerifyingOrderId] = useState("");
   const navigate = useNavigate();
 
-  const loadSummary = async () => {
+  const loadSummary = async ({ showLoader = true } = {}) => {
     try {
       setError("");
-      setLoading(true);
+      if (showLoader) {
+        setLoading(true);
+      }
       const res = await api.get("/admin/summary");
       setData(res.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load admin dashboard");
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
@@ -32,6 +38,40 @@ function AdminDashboard() {
   }, []);
 
   const canBookTickets = Boolean(sessionStorage.getItem("token"));
+  const removePendingOrder = (orderId) => {
+    setData((currentData) => {
+      if (!currentData) {
+        return currentData;
+      }
+
+      const pendingOrders = (currentData.pendingOrders || []).filter(
+        (order) => order.orderId !== orderId
+      );
+
+      return {
+        ...currentData,
+        pendingOrders,
+        totals: {
+          ...currentData.totals,
+          pendingVerifications: pendingOrders.length
+        }
+      };
+    });
+  };
+
+  const getApiErrorMessage = (err, fallback) => {
+    const responseMessage = err.response?.data?.message;
+
+    if (responseMessage) {
+      return responseMessage;
+    }
+
+    if (typeof err.response?.data === "string") {
+      return err.response.data;
+    }
+
+    return fallback;
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
@@ -66,18 +106,27 @@ function AdminDashboard() {
   const handleAddCoachIds = async (e) => {
     e.preventDefault();
     setCoachIdMessage("");
+    setCoachIdResult(null);
     setError("");
 
     try {
       setAddingCoachIds(true);
       const res = await api.post("/admin/coach-ids", { coachIds });
-      const { added, skipped, invalid } = res.data;
+      const { added = [], skipped = [], invalid = [] } = res.data;
       setCoachIdMessage(
-        `Added ${added.length} ID(s). Skipped ${skipped.length} duplicate(s). Invalid ${invalid.length}.`
+        `Added ${added.length} ID(s). Skipped ${skipped.length} ID(s). Invalid ${invalid.length}.`
       );
+      setCoachIdResult(res.data);
       setCoachIds("");
       await loadSummary();
     } catch (err) {
+      if (err.response?.data) {
+        const { added = [], skipped = [], invalid = [] } = err.response.data;
+        setCoachIdResult(err.response.data);
+        setCoachIdMessage(
+          `Added ${added.length} ID(s). Skipped ${skipped.length} ID(s). Invalid ${invalid.length}.`
+        );
+      }
       setError(err.response?.data?.message || "Failed to add coach IDs");
     } finally {
       setAddingCoachIds(false);
@@ -89,12 +138,35 @@ function AdminDashboard() {
       setVerifyingOrderId(orderId);
       setError("");
       await api.post(`/admin/orders/${orderId}/${action}`);
-      await loadSummary();
+      removePendingOrder(orderId);
+      await loadSummary({ showLoader: false });
     } catch (err) {
-      setError(err.response?.data?.message || `Failed to ${action} payment`);
+      if (err.response?.data?.code === "EVENT_OVER") {
+        removePendingOrder(orderId);
+        await loadSummary({ showLoader: false });
+      }
+
+      setError(getApiErrorMessage(err, `Failed to ${action} payment`));
     } finally {
       setVerifyingOrderId("");
     }
+  };
+
+  const renderIdList = (label, ids) => {
+    if (!ids || ids.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="admin-coach-result-group">
+        <strong>{label}</strong>
+        <div className="admin-coach-result-list">
+          {ids.map((id, index) => (
+            <span key={`${label}-${id}-${index}`}>{id}</span>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   const totals = data?.totals || {};
@@ -116,7 +188,7 @@ function AdminDashboard() {
               Book Tickets
             </button>
           )}
-          <button onClick={loadSummary} className="admin-secondary-button">Refresh</button>
+          <button onClick={() => loadSummary()} className="admin-secondary-button">Refresh</button>
           <button onClick={handleExport} className="admin-primary-button" disabled={downloading}>
             {downloading ? "Preparing..." : "Download Excel"}
           </button>
@@ -125,7 +197,7 @@ function AdminDashboard() {
       </header>
 
       {error && <p className="admin-dashboard-error">{error}</p>}
-      {loading && <p className="admin-dashboard-loading">Loading dashboard...</p>}
+      {loading && <LoadingSpinner fullHeight />}
 
       {!loading && data && (
         <>
@@ -172,6 +244,7 @@ function AdminDashboard() {
                     <th>Qty</th>
                     <th>Amount</th>
                     <th>Transaction ID</th>
+                    <th>WhatsApp</th>
                     <th>Submitted At</th>
                     <th>Action</th>
                   </tr>
@@ -184,6 +257,7 @@ function AdminDashboard() {
                       <td>{order.quantity}</td>
                       <td>Rs. {order.amount}</td>
                       <td>{order.transactionId || "-"}</td>
+                      <td>{order.whatsappNumber || "-"}</td>
                       <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
                       <td>
                         <div className="admin-row-actions">
@@ -207,7 +281,7 @@ function AdminDashboard() {
                   ))}
                   {pendingOrders.length === 0 && (
                     <tr>
-                      <td colSpan="7">No pending payments.</td>
+                      <td colSpan="8">No pending payments.</td>
                     </tr>
                   )}
                 </tbody>
@@ -235,6 +309,14 @@ function AdminDashboard() {
                   {addingCoachIds ? "Adding..." : "Add Coach IDs"}
                 </button>
               </div>
+              {coachIdResult && (
+                <div className="admin-coach-result">
+                  {renderIdList("Added", coachIdResult.added)}
+                  {renderIdList("Already exists", coachIdResult.existing)}
+                  {renderIdList("Duplicate in paste", coachIdResult.duplicate)}
+                  {renderIdList("Invalid", coachIdResult.invalid)}
+                </div>
+              )}
             </form>
           </section>
 
@@ -287,6 +369,7 @@ function AdminDashboard() {
                     <th>Qty</th>
                     <th>Amount</th>
                     <th>Payment ID</th>
+                    <th>WhatsApp</th>
                     <th>Booked At</th>
                   </tr>
                 </thead>
@@ -299,12 +382,24 @@ function AdminDashboard() {
                       <td>{order.quantity}</td>
                       <td>Rs. {order.amount}</td>
                       <td>{order.paymentId || "-"}</td>
+                      <td>
+                        {order.whatsappLink ? (
+                          <a
+                            href={order.whatsappLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="admin-whatsapp-link"
+                          >
+                            Send Message
+                          </a>
+                        ) : "-"}
+                      </td>
                       <td>{order.bookedAt ? new Date(order.bookedAt).toLocaleString() : "-"}</td>
                     </tr>
                   ))}
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan="7">No confirmed orders yet.</td>
+                      <td colSpan="8">No confirmed orders yet.</td>
                     </tr>
                   )}
                 </tbody>
