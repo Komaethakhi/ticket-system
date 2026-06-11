@@ -320,8 +320,9 @@ function TrainingDetails() {
 const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
-    background: "#F4F7F3",
-    padding: "32px",
+    background:
+      "radial-gradient(circle at 8% 0%, rgba(122, 193, 67, 0.2), transparent 28rem), radial-gradient(circle at 92% 8%, rgba(14, 63, 31, 0.12), transparent 24rem), #F5F9F1",
+    padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
   },
@@ -333,21 +334,23 @@ const styles = {
     margin: "0 auto"
   },
   backButton: {
-    border: "1px solid #D5DED0",
-    background: "#fff",
+    border: "1px solid rgba(213, 222, 208, 0.95)",
+    background: "rgba(255,255,255,0.9)",
     color: "#31551F",
-    borderRadius: "6px",
-    padding: "9px 14px",
+    borderRadius: "999px",
+    padding: "10px 16px",
     cursor: "pointer",
     fontWeight: "700",
-    marginBottom: "18px"
+    marginBottom: "18px",
+    boxShadow: "0 10px 24px rgba(31, 58, 26, 0.08)"
   },
   hero: {
-    background: "linear-gradient(135deg, #194A2A 0%, #6DBF3F 100%)",
-    borderRadius: "8px",
+    background: "linear-gradient(135deg, rgba(14, 63, 31, 0.98) 0%, rgba(42, 126, 55, 0.96) 58%, rgba(122, 193, 67, 0.94) 100%)",
+    borderRadius: "30px",
     color: "#fff",
     overflow: "hidden",
-    boxShadow: "0 14px 34px rgba(35, 83, 34, 0.18)"
+    border: "1px solid rgba(255,255,255,0.22)",
+    boxShadow: "0 30px 80px rgba(21, 76, 34, 0.28), inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   heroWithImage: {
     display: "grid",
@@ -358,22 +361,24 @@ const styles = {
     gridTemplateColumns: "1fr"
   },
   heroContent: {
-    padding: "38px",
+    padding: "44px",
     maxWidth: "760px"
   },
   heroContentMobile: {
     padding: "24px"
   },
   heroImageWrap: {
-    minHeight: "360px",
-    background: "#0E3F1F"
+    minHeight: "400px",
+    background: "#0E3F1F",
+    borderLeft: "1px solid rgba(255,255,255,0.14)"
   },
   heroImage: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
     objectPosition: "center top",
-    display: "block"
+    display: "block",
+    filter: "saturate(1.05) contrast(1.02)"
   },
   badge: {
     display: "inline-block",
@@ -382,15 +387,18 @@ const styles = {
     borderRadius: "999px",
     padding: "7px 12px",
     fontSize: "13px",
-    fontWeight: "700"
+    fontWeight: "900",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase"
   },
   title: {
-    fontSize: "34px",
-    lineHeight: 1.15,
+    fontSize: "44px",
+    lineHeight: 1.05,
+    letterSpacing: "-0.04em",
     margin: "18px 0 10px"
   },
   titleMobile: {
-    fontSize: "28px"
+    fontSize: "32px"
   },
   description: {
     fontSize: "16px",
@@ -410,8 +418,9 @@ const styles = {
   metaItem: {
     background: "rgba(255,255,255,0.12)",
     border: "1px solid rgba(255,255,255,0.22)",
-    borderRadius: "8px",
-    padding: "14px"
+    borderRadius: "18px",
+    padding: "16px",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)"
   },
   metaLabel: {
     display: "block",
@@ -436,15 +445,17 @@ const styles = {
     gap: "16px"
   },
   detailsPanel: {
-    background: "#fff",
-    border: "1px solid #DFE7DA",
-    borderRadius: "8px",
-    padding: "26px"
+    background: "rgba(255,255,255,0.9)",
+    border: "1px solid rgba(223, 231, 218, 0.95)",
+    borderRadius: "24px",
+    padding: "28px",
+    boxShadow: "0 18px 44px rgba(31, 58, 26, 0.1)"
   },
   sectionTitle: {
     margin: "0 0 10px",
     fontSize: "22px",
-    color: "#1F2A1B"
+    color: "#142414",
+    letterSpacing: "-0.02em"
   },
   bodyText: {
     color: "#5E6A59",
@@ -466,11 +477,11 @@ const styles = {
     overflowWrap: "anywhere"
   },
   checkoutPanel: {
-    background: "#fff",
-    border: "1px solid #DFE7DA",
-    borderRadius: "8px",
+    background: "rgba(255,255,255,0.94)",
+    border: "1px solid rgba(223, 231, 218, 0.95)",
+    borderRadius: "24px",
     padding: "24px",
-    boxShadow: "0 12px 26px rgba(31, 58, 26, 0.12)",
+    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)",
     alignSelf: "start"
   },
   priceBlock: {
@@ -513,7 +524,7 @@ const styles = {
     width: 42,
     height: 42,
     fontSize: 20,
-    background: "#7AC143",
+    background: "linear-gradient(135deg, #7AC143, #218C3B)",
     color: "#fff",
     border: "none",
     cursor: "pointer"
@@ -529,7 +540,7 @@ const styles = {
     justifyContent: "space-between",
     alignItems: "center",
     background: "#F4F7F3",
-    borderRadius: "8px",
+    borderRadius: "16px",
     padding: "16px",
     color: "#1F2A1B",
     fontSize: "18px",
@@ -544,18 +555,19 @@ const styles = {
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: 16,
-    fontWeight: "800"
+    fontWeight: "800",
+    boxShadow: "0 16px 32px rgba(47, 143, 70, 0.28)"
   },
   paymentPanel: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "22px",
     marginTop: "24px",
-    background: "#fff",
-    border: "1px solid #DFE7DA",
-    borderRadius: "8px",
+    background: "rgba(255,255,255,0.94)",
+    border: "1px solid rgba(223, 231, 218, 0.95)",
+    borderRadius: "24px",
     padding: "26px",
-    boxShadow: "0 12px 26px rgba(31, 58, 26, 0.12)"
+    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)"
   },
   paymentPanelMobile: {
     gridTemplateColumns: "1fr",

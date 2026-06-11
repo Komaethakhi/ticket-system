@@ -121,8 +121,9 @@ function Home() {
 const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
-    background: "#F4F7F3",
-    padding: "32px 38px",
+    background:
+      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.22), transparent 28rem), radial-gradient(circle at 90% 10%, rgba(25, 74, 42, 0.12), transparent 24rem), #F5F9F1",
+    padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
   },
@@ -132,52 +133,60 @@ const styles = {
   hero: {
     maxWidth: "1120px",
     margin: "0 auto",
-    background: "linear-gradient(135deg, #194A2A 0%, #6DBF3F 100%)",
+    position: "relative",
+    background:
+      "linear-gradient(135deg, rgba(14, 63, 31, 0.98) 0%, rgba(48, 137, 58, 0.96) 50%, rgba(122, 193, 67, 0.94) 100%)",
     color: "#fff",
-    borderRadius: "8px",
-    padding: "34px",
+    borderRadius: "28px",
+    padding: "42px",
     display: "flex",
     justifyContent: "space-between",
     gap: "24px",
     flexWrap: "wrap",
-    boxShadow: "0 14px 34px rgba(35, 83, 34, 0.18)"
+    border: "1px solid rgba(255,255,255,0.24)",
+    boxShadow: "0 30px 80px rgba(21, 76, 34, 0.28), inset 0 1px 0 rgba(255,255,255,0.2)"
   },
   heroMobile: {
-    padding: "24px",
+    padding: "28px",
     alignItems: "stretch"
   },
   badge: {
     display: "inline-block",
-    background: "rgba(255,255,255,0.16)",
+    background: "rgba(255,255,255,0.18)",
     border: "1px solid rgba(255,255,255,0.32)",
     borderRadius: "999px",
-    padding: "7px 12px",
+    padding: "8px 14px",
     fontSize: "13px",
-    fontWeight: "700"
+    fontWeight: "900",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase"
   },
   heroTitle: {
     margin: "16px 0 8px",
-    fontSize: "34px",
-    lineHeight: 1.15
+    fontSize: "44px",
+    lineHeight: 1.05,
+    letterSpacing: "-0.04em"
   },
   heroTitleMobile: {
-    fontSize: "28px"
+    fontSize: "32px"
   },
   heroText: {
     margin: 0,
     color: "rgba(255,255,255,0.88)",
-    fontSize: "16px"
+    fontSize: "17px",
+    maxWidth: "560px"
   },
   summaryBox: {
     minWidth: "170px",
-    background: "rgba(255,255,255,0.14)",
+    background: "rgba(255,255,255,0.16)",
     border: "1px solid rgba(255,255,255,0.24)",
-    borderRadius: "8px",
-    padding: "18px",
+    borderRadius: "22px",
+    padding: "22px",
     alignSelf: "stretch",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center"
+    justifyContent: "center",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)"
   },
   summaryBoxMobile: {
     width: "100%",
@@ -190,7 +199,7 @@ const styles = {
     fontWeight: "700"
   },
   summaryValue: {
-    fontSize: "38px",
+    fontSize: "44px",
     marginTop: "6px"
   },
   toolbar: {
@@ -206,8 +215,9 @@ const styles = {
   },
   heading: {
     margin: 0,
-    color: "#1F2A1B",
-    fontSize: "24px"
+    color: "#142414",
+    fontSize: "28px",
+    letterSpacing: "-0.03em"
   },
   subText: {
     margin: "6px 0 0",
@@ -216,38 +226,41 @@ const styles = {
   emptyBox: {
     maxWidth: "1120px",
     margin: "0 auto",
-    background: "#fff",
-    border: "1px solid #DFE7DA",
-    borderRadius: "8px",
-    padding: "26px"
+    background: "rgba(255,255,255,0.82)",
+    border: "1px solid rgba(223, 231, 218, 0.9)",
+    borderRadius: "22px",
+    padding: "28px",
+    boxShadow: "0 18px 40px rgba(31, 58, 26, 0.08)"
   },
   grid: {
     maxWidth: "1120px",
     margin: "0 auto",
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap: "22px"
+    gap: "26px"
   },
   gridMobile: {
     gridTemplateColumns: "1fr",
     gap: "16px"
   },
   card: {
-    background: "#fff",
-    padding: "22px",
-    borderRadius: "8px",
-    border: "1px solid #DFE7DA",
-    boxShadow: "0 10px 24px rgba(31, 58, 26, 0.09)"
+    background: "rgba(255,255,255,0.88)",
+    padding: "18px",
+    borderRadius: "26px",
+    border: "1px solid rgba(223, 231, 218, 0.92)",
+    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.12)",
+    backdropFilter: "blur(14px)"
   },
   cardImage: {
     width: "100%",
     aspectRatio: "4 / 5",
     objectFit: "cover",
     objectPosition: "center top",
-    borderRadius: "8px",
+    borderRadius: "20px",
     display: "block",
     marginBottom: "18px",
-    border: "1px solid #DFE7DA"
+    border: "1px solid rgba(223, 231, 218, 0.9)",
+    boxShadow: "0 18px 38px rgba(12, 46, 20, 0.12)"
   },
   cardTop: {
     display: "flex",
@@ -257,22 +270,24 @@ const styles = {
     marginBottom: "18px"
   },
   cardBadge: {
-    background: "#EAF5E4",
-    color: "#3C7D20",
+    background: "linear-gradient(135deg, #EAF8E3, #F7FDEB)",
+    color: "#287A12",
     borderRadius: "999px",
-    padding: "6px 10px",
+    padding: "7px 12px",
     fontSize: "13px",
-    fontWeight: "800"
+    fontWeight: "900",
+    border: "1px solid #D6EDC6"
   },
   price: {
-    color: "#2F8F15",
-    fontSize: "20px"
+    color: "#207B22",
+    fontSize: "22px"
   },
   title: {
     margin: "0 0 9px",
-    color: "#1F2A1B",
-    fontSize: "23px",
-    lineHeight: 1.25
+    color: "#142414",
+    fontSize: "25px",
+    lineHeight: 1.18,
+    letterSpacing: "-0.03em"
   },
   titleMobile: {
     fontSize: "21px"
@@ -294,9 +309,10 @@ const styles = {
     gridTemplateColumns: "1fr"
   },
   metaItem: {
-    background: "#F4F7F3",
-    borderRadius: "8px",
-    padding: "12px"
+    background: "linear-gradient(135deg, #F7FAF4, #EEF7E8)",
+    border: "1px solid #E4EEDF",
+    borderRadius: "16px",
+    padding: "14px"
   },
   metaLabel: {
     display: "block",
@@ -310,14 +326,15 @@ const styles = {
   },
   button: {
     width: "100%",
-    padding: "13px",
-    background: "#7AC143",
+    padding: "15px",
+    background: "linear-gradient(135deg, #7AC143, #218C3B)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
+    borderRadius: "16px",
     cursor: "pointer",
     fontWeight: "800",
-    fontSize: "15px"
+    fontSize: "15px",
+    boxShadow: "0 16px 32px rgba(47, 143, 70, 0.28)"
   }
 };
 

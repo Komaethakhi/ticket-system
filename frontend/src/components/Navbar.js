@@ -47,14 +47,20 @@ function Navbar() {
 const styles = {
   nav: {
     minHeight: "64px",
-    background: "#7AC143", // Herbalife green
+    position: "sticky",
+    top: 0,
+    zIndex: 20,
+    background: "linear-gradient(135deg, rgba(18, 72, 38, 0.96), rgba(70, 154, 58, 0.95))",
+    backdropFilter: "blur(18px)",
     color: "#fff",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: "14px",
     padding: "0 30px",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    borderBottom: "1px solid rgba(255,255,255,0.16)",
+    boxShadow: "0 14px 34px rgba(16, 55, 26, 0.22)"
   },
   navMobile: {
     alignItems: "stretch",
@@ -64,8 +70,9 @@ const styles = {
   logo: {
     margin: 0,
     fontSize: "20px",
-    fontWeight: "600",
-    lineHeight: 1.2
+    fontWeight: "900",
+    lineHeight: 1.2,
+    letterSpacing: "-0.02em"
   },
   logoMobile: {
     fontSize: "16px",
@@ -83,22 +90,23 @@ const styles = {
     gap: "8px"
   },
   navButton: {
-    background: "#fff",
-    color: "#5FA92D",
-    border: "none",
+    background: "rgba(255,255,255,0.94)",
+    color: "#1E6B34",
+    border: "1px solid rgba(255,255,255,0.5)",
     padding: "8px 16px",
-    borderRadius: "6px",
+    borderRadius: "999px",
     cursor: "pointer",
-    fontWeight: "600"
+    fontWeight: "800",
+    boxShadow: "0 8px 18px rgba(8, 38, 17, 0.12)"
   },
   logout: {
-    background: "rgba(16, 24, 40, 0.22)",
+    background: "rgba(16, 24, 40, 0.28)",
     color: "#fff",
     border: "1px solid rgba(255,255,255,0.28)",
     padding: "8px 16px",
-    borderRadius: "6px",
+    borderRadius: "999px",
     cursor: "pointer",
-    fontWeight: "600"
+    fontWeight: "800"
   }
 };
 

@@ -46,7 +46,11 @@ function MyTickets() {
     <>
       <Navbar />
       <main style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
-        <h2>My Tickets</h2>
+        <section style={styles.hero}>
+          <span style={styles.badge}>Ticket Wallet</span>
+          <h2 style={styles.heading}>My Tickets</h2>
+          <p style={styles.subText}>Track confirmations, payment status, and order details in one place.</p>
+        </section>
 
         {loading && <LoadingSpinner fullHeight />}
         {!loading && tickets.length === 0 && <p>No tickets booked yet.</p>}
@@ -59,8 +63,8 @@ function MyTickets() {
                 <p style={styles.successText}>Your order was placed successfully.</p>
               </div>
             )}
-            <h3>{t.title}</h3>
-            <p>Order ID: {t.orderId}</p>
+            <h3 style={styles.cardTitle}>{t.title}</h3>
+            <p style={styles.orderId}>Order ID: {t.orderId}</p>
             <p>{t.date}</p>
             <p>{t.location}</p>
             <p>Quantity: {t.quantity}</p>
@@ -91,7 +95,8 @@ const styles = {
   page: {
     padding: "30px",
     boxSizing: "border-box",
-    background: "#F4F7F3",
+    background:
+      "radial-gradient(circle at 8% 0%, rgba(122, 193, 67, 0.2), transparent 28rem), #F5F9F1",
     minHeight: "calc(100vh - 64px)",
     overflowX: "hidden"
   },
@@ -99,17 +104,58 @@ const styles = {
     padding: "18px 16px"
   },
   card: {
-    border: "1px solid #ccc",
-    padding: "15px",
-    marginBottom: "15px",
-    background: "#fff",
-    borderRadius: "8px",
-    overflowWrap: "anywhere"
+    width: "min(920px, 100%)",
+    border: "1px solid rgba(223, 231, 218, 0.95)",
+    padding: "24px",
+    margin: "0 auto 18px",
+    background: "rgba(255,255,255,0.92)",
+    borderRadius: "24px",
+    overflowWrap: "anywhere",
+    boxShadow: "0 20px 54px rgba(31, 58, 26, 0.11)"
+  },
+  hero: {
+    width: "min(920px, 100%)",
+    margin: "0 auto 24px",
+    padding: "34px",
+    color: "#fff",
+    borderRadius: "28px",
+    background: "linear-gradient(135deg, rgba(14, 63, 31, 0.98), rgba(122, 193, 67, 0.94))",
+    boxShadow: "0 28px 70px rgba(21, 76, 34, 0.24)"
+  },
+  badge: {
+    display: "inline-block",
+    padding: "8px 14px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.16)",
+    border: "1px solid rgba(255,255,255,0.28)",
+    fontSize: "12px",
+    fontWeight: "900",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase"
+  },
+  heading: {
+    margin: "14px 0 8px",
+    fontSize: "38px",
+    letterSpacing: "-0.04em"
+  },
+  subText: {
+    margin: 0,
+    color: "rgba(255,255,255,0.86)"
+  },
+  cardTitle: {
+    margin: "0 0 8px",
+    color: "#142414",
+    fontSize: "24px",
+    letterSpacing: "-0.02em"
+  },
+  orderId: {
+    color: "#64735F",
+    fontSize: "13px"
   },
   successBox: {
     background: "#EAF7E2",
     border: "1px solid #BFE4A8",
-    borderRadius: "8px",
+    borderRadius: "18px",
     padding: "14px",
     marginBottom: "14px"
   },
