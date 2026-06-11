@@ -96,7 +96,8 @@ const styles = {
     padding: "30px",
     boxSizing: "border-box",
     background:
-      "radial-gradient(circle at 8% 0%, rgba(122, 193, 67, 0.2), transparent 28rem), #F5F9F1",
+      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
+    backgroundSize: "46px 46px, auto",
     minHeight: "calc(100vh - 64px)",
     overflowX: "hidden"
   },
@@ -105,29 +106,33 @@ const styles = {
   },
   card: {
     width: "min(920px, 100%)",
-    border: "1px solid rgba(223, 231, 218, 0.95)",
+    border: "1px solid #DCEFD4",
+    borderTop: "6px solid #7AC143",
     padding: "24px",
     margin: "0 auto 18px",
     background: "rgba(255,255,255,0.92)",
     borderRadius: "24px",
     overflowWrap: "anywhere",
-    boxShadow: "0 20px 54px rgba(31, 58, 26, 0.11)"
+    boxShadow: "0 20px 54px rgba(0, 99, 65, 0.12)"
   },
   hero: {
     width: "min(920px, 100%)",
     margin: "0 auto 24px",
     padding: "34px",
-    color: "#fff",
+    color: "#17351F",
     borderRadius: "28px",
-    background: "linear-gradient(135deg, rgba(14, 63, 31, 0.98), rgba(122, 193, 67, 0.94))",
-    boxShadow: "0 28px 70px rgba(21, 76, 34, 0.24)"
+    background: "#FFFFFF",
+    border: "1px solid #DCEFD4",
+    borderLeft: "12px solid #7AC143",
+    boxShadow: "0 28px 70px rgba(0, 99, 65, 0.14)"
   },
   badge: {
     display: "inline-block",
     padding: "8px 14px",
     borderRadius: "999px",
-    background: "rgba(255,255,255,0.16)",
-    border: "1px solid rgba(255,255,255,0.28)",
+    background: "#EAF8E3",
+    color: "#006341",
+    border: "1px solid #CDEBBF",
     fontSize: "12px",
     fontWeight: "900",
     letterSpacing: "0.06em",
@@ -140,11 +145,11 @@ const styles = {
   },
   subText: {
     margin: 0,
-    color: "rgba(255,255,255,0.86)"
+    color: "#536B4E"
   },
   cardTitle: {
     margin: "0 0 8px",
-    color: "#142414",
+    color: "#17351F",
     fontSize: "24px",
     letterSpacing: "-0.02em"
   },

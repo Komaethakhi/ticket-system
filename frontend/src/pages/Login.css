@@ -5,7 +5,10 @@
   align-items: center;
   padding: 28px;
   box-sizing: border-box;
-  background: linear-gradient(135deg, #eef7e8 0%, #f8fbf5 42%, #eaf1ff 100%);
+  background:
+    linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff 0%, #f4faf0 48%, #ffffff 100%);
+  background-size: 46px 46px, auto;
 }
 
 .login-shell {
@@ -14,9 +17,10 @@
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 30px;
   background: #ffffff;
-  box-shadow: 0 22px 70px rgba(16, 24, 40, 0.16);
+  border: 1px solid #dcefd4;
+  box-shadow: 0 26px 76px rgba(0, 99, 65, 0.14);
 }
 
 .login-brand-panel {
@@ -27,14 +31,14 @@
   justify-content: space-between;
   color: #ffffff;
   background:
-    linear-gradient(145deg, rgba(30, 96, 60, 0.96), rgba(78, 153, 73, 0.94)),
+    linear-gradient(145deg, rgba(0, 99, 65, 0.96), rgba(122, 193, 67, 0.88)),
     url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80") center/cover;
 }
 
 .login-brand-mark {
   width: 54px;
   height: 54px;
-  border-radius: 8px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.18);
@@ -103,9 +107,9 @@
   display: inline-flex;
   width: fit-content;
   padding: 7px 10px;
-  border-radius: 8px;
-  background: #eef7e8;
-  color: #2f6f36;
+  border-radius: 999px;
+  background: #eaf8e3;
+  color: #006341;
   font-size: 12px;
   font-weight: 800;
 }
@@ -197,13 +201,13 @@
   padding: 14px 16px;
   min-height: 50px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6fbf3f, #2f8f46);
+  background: linear-gradient(135deg, #006341, #008554);
   color: #ffffff;
   border: none;
   cursor: pointer;
   font-size: 16px;
   font-weight: 800;
-  box-shadow: 0 12px 28px rgba(47, 143, 70, 0.28);
+  box-shadow: 0 14px 30px rgba(0, 99, 65, 0.24);
 }
 
 .login-button:hover {

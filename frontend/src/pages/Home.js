@@ -122,7 +122,8 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.22), transparent 28rem), radial-gradient(circle at 90% 10%, rgba(25, 74, 42, 0.12), transparent 24rem), #F5F9F1",
+      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
+    backgroundSize: "46px 46px, auto",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -134,17 +135,17 @@ const styles = {
     maxWidth: "1120px",
     margin: "0 auto",
     position: "relative",
-    background:
-      "linear-gradient(135deg, rgba(14, 63, 31, 0.98) 0%, rgba(48, 137, 58, 0.96) 50%, rgba(122, 193, 67, 0.94) 100%)",
-    color: "#fff",
-    borderRadius: "28px",
-    padding: "42px",
+    background: "#FFFFFF",
+    color: "#17351F",
+    borderRadius: "32px",
+    padding: "46px",
     display: "flex",
     justifyContent: "space-between",
     gap: "24px",
     flexWrap: "wrap",
-    border: "1px solid rgba(255,255,255,0.24)",
-    boxShadow: "0 30px 80px rgba(21, 76, 34, 0.28), inset 0 1px 0 rgba(255,255,255,0.2)"
+    border: "1px solid #DCEFD4",
+    borderLeft: "12px solid #7AC143",
+    boxShadow: "0 28px 70px rgba(0, 99, 65, 0.16), inset 0 1px 0 rgba(255,255,255,0.9)"
   },
   heroMobile: {
     padding: "28px",
@@ -152,8 +153,9 @@ const styles = {
   },
   badge: {
     display: "inline-block",
-    background: "rgba(255,255,255,0.18)",
-    border: "1px solid rgba(255,255,255,0.32)",
+    background: "#EAF8E3",
+    color: "#006341",
+    border: "1px solid #CDEBBF",
     borderRadius: "999px",
     padding: "8px 14px",
     fontSize: "13px",
@@ -172,21 +174,22 @@ const styles = {
   },
   heroText: {
     margin: 0,
-    color: "rgba(255,255,255,0.88)",
+    color: "#536B4E",
     fontSize: "17px",
     maxWidth: "560px"
   },
   summaryBox: {
     minWidth: "170px",
-    background: "rgba(255,255,255,0.16)",
-    border: "1px solid rgba(255,255,255,0.24)",
+    background: "linear-gradient(135deg, #006341, #008554)",
+    color: "#fff",
+    border: "1px solid #006341",
     borderRadius: "22px",
     padding: "22px",
     alignSelf: "stretch",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22)"
+    boxShadow: "0 18px 38px rgba(0, 99, 65, 0.2)"
   },
   summaryBoxMobile: {
     width: "100%",
@@ -215,7 +218,7 @@ const styles = {
   },
   heading: {
     margin: 0,
-    color: "#142414",
+    color: "#17351F",
     fontSize: "28px",
     letterSpacing: "-0.03em"
   },
@@ -226,8 +229,8 @@ const styles = {
   emptyBox: {
     maxWidth: "1120px",
     margin: "0 auto",
-    background: "rgba(255,255,255,0.82)",
-    border: "1px solid rgba(223, 231, 218, 0.9)",
+    background: "#FFFFFF",
+    border: "1px solid #DCEFD4",
     borderRadius: "22px",
     padding: "28px",
     boxShadow: "0 18px 40px rgba(31, 58, 26, 0.08)"
@@ -244,11 +247,12 @@ const styles = {
     gap: "16px"
   },
   card: {
-    background: "rgba(255,255,255,0.88)",
+    background: "#FFFFFF",
     padding: "18px",
     borderRadius: "26px",
-    border: "1px solid rgba(223, 231, 218, 0.92)",
-    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.12)",
+    border: "1px solid #DCEFD4",
+    borderTop: "6px solid #7AC143",
+    boxShadow: "0 24px 60px rgba(0, 99, 65, 0.13)",
     backdropFilter: "blur(14px)"
   },
   cardImage: {
@@ -284,7 +288,7 @@ const styles = {
   },
   title: {
     margin: "0 0 9px",
-    color: "#142414",
+    color: "#17351F",
     fontSize: "25px",
     lineHeight: 1.18,
     letterSpacing: "-0.03em"
@@ -309,7 +313,7 @@ const styles = {
     gridTemplateColumns: "1fr"
   },
   metaItem: {
-    background: "linear-gradient(135deg, #F7FAF4, #EEF7E8)",
+    background: "linear-gradient(135deg, #FFFFFF, #F0FAEA)",
     border: "1px solid #E4EEDF",
     borderRadius: "16px",
     padding: "14px"
@@ -327,14 +331,14 @@ const styles = {
   button: {
     width: "100%",
     padding: "15px",
-    background: "linear-gradient(135deg, #7AC143, #218C3B)",
+    background: "linear-gradient(135deg, #006341, #008554)",
     color: "#fff",
     border: "none",
     borderRadius: "16px",
     cursor: "pointer",
     fontWeight: "800",
     fontSize: "15px",
-    boxShadow: "0 16px 32px rgba(47, 143, 70, 0.28)"
+    boxShadow: "0 16px 32px rgba(0, 99, 65, 0.24)"
   }
 };
 

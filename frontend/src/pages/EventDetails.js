@@ -321,7 +321,8 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "radial-gradient(circle at 8% 0%, rgba(122, 193, 67, 0.2), transparent 28rem), radial-gradient(circle at 92% 8%, rgba(14, 63, 31, 0.12), transparent 24rem), #F5F9F1",
+      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
+    backgroundSize: "46px 46px, auto",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -336,7 +337,7 @@ const styles = {
   backButton: {
     border: "1px solid rgba(213, 222, 208, 0.95)",
     background: "rgba(255,255,255,0.9)",
-    color: "#31551F",
+    color: "#006341",
     borderRadius: "999px",
     padding: "10px 16px",
     cursor: "pointer",
@@ -345,12 +346,13 @@ const styles = {
     boxShadow: "0 10px 24px rgba(31, 58, 26, 0.08)"
   },
   hero: {
-    background: "linear-gradient(135deg, rgba(14, 63, 31, 0.98) 0%, rgba(42, 126, 55, 0.96) 58%, rgba(122, 193, 67, 0.94) 100%)",
+    background: "#FFFFFF",
     borderRadius: "30px",
-    color: "#fff",
+    color: "#17351F",
     overflow: "hidden",
-    border: "1px solid rgba(255,255,255,0.22)",
-    boxShadow: "0 30px 80px rgba(21, 76, 34, 0.28), inset 0 1px 0 rgba(255,255,255,0.18)"
+    border: "1px solid #DCEFD4",
+    borderLeft: "12px solid #7AC143",
+    boxShadow: "0 30px 80px rgba(0, 99, 65, 0.16), inset 0 1px 0 rgba(255,255,255,0.9)"
   },
   heroWithImage: {
     display: "grid",
@@ -369,8 +371,8 @@ const styles = {
   },
   heroImageWrap: {
     minHeight: "400px",
-    background: "#0E3F1F",
-    borderLeft: "1px solid rgba(255,255,255,0.14)"
+    background: "#F0FAEA",
+    borderLeft: "1px solid #DCEFD4"
   },
   heroImage: {
     width: "100%",
@@ -382,8 +384,9 @@ const styles = {
   },
   badge: {
     display: "inline-block",
-    background: "rgba(255,255,255,0.16)",
-    border: "1px solid rgba(255,255,255,0.32)",
+    background: "#EAF8E3",
+    color: "#006341",
+    border: "1px solid #CDEBBF",
     borderRadius: "999px",
     padding: "7px 12px",
     fontSize: "13px",
@@ -404,7 +407,7 @@ const styles = {
     fontSize: "16px",
     lineHeight: 1.6,
     margin: 0,
-    color: "rgba(255,255,255,0.88)"
+    color: "#536B4E"
   },
   metaGrid: {
     display: "grid",
@@ -416,11 +419,11 @@ const styles = {
     gridTemplateColumns: "1fr"
   },
   metaItem: {
-    background: "rgba(255,255,255,0.12)",
-    border: "1px solid rgba(255,255,255,0.22)",
+    background: "linear-gradient(135deg, #006341, #008554)",
+    border: "1px solid #006341",
     borderRadius: "18px",
     padding: "16px",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14)"
+    boxShadow: "0 14px 30px rgba(0, 99, 65, 0.18)"
   },
   metaLabel: {
     display: "block",
@@ -445,8 +448,9 @@ const styles = {
     gap: "16px"
   },
   detailsPanel: {
-    background: "rgba(255,255,255,0.9)",
-    border: "1px solid rgba(223, 231, 218, 0.95)",
+    background: "#FFFFFF",
+    border: "1px solid #DCEFD4",
+    borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "28px",
     boxShadow: "0 18px 44px rgba(31, 58, 26, 0.1)"
@@ -454,7 +458,7 @@ const styles = {
   sectionTitle: {
     margin: "0 0 10px",
     fontSize: "22px",
-    color: "#142414",
+    color: "#17351F",
     letterSpacing: "-0.02em"
   },
   bodyText: {
@@ -477,8 +481,9 @@ const styles = {
     overflowWrap: "anywhere"
   },
   checkoutPanel: {
-    background: "rgba(255,255,255,0.94)",
-    border: "1px solid rgba(223, 231, 218, 0.95)",
+    background: "#FFFFFF",
+    border: "1px solid #DCEFD4",
+    borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "24px",
     boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)",
@@ -524,7 +529,7 @@ const styles = {
     width: 42,
     height: 42,
     fontSize: 20,
-    background: "linear-gradient(135deg, #7AC143, #218C3B)",
+    background: "linear-gradient(135deg, #006341, #008554)",
     color: "#fff",
     border: "none",
     cursor: "pointer"
@@ -556,15 +561,16 @@ const styles = {
     cursor: "pointer",
     fontSize: 16,
     fontWeight: "800",
-    boxShadow: "0 16px 32px rgba(47, 143, 70, 0.28)"
+    boxShadow: "0 16px 32px rgba(0, 99, 65, 0.24)"
   },
   paymentPanel: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
     gap: "22px",
     marginTop: "24px",
-    background: "rgba(255,255,255,0.94)",
-    border: "1px solid rgba(223, 231, 218, 0.95)",
+    background: "#FFFFFF",
+    border: "1px solid #DCEFD4",
+    borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "26px",
     boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)"

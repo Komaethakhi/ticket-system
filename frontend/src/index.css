@@ -5,10 +5,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #142414;
+  color: #17351f;
   background:
-    radial-gradient(circle at top left, rgba(122, 193, 67, 0.2), transparent 34rem),
-    linear-gradient(135deg, #f7fbf2 0%, #edf7e6 48%, #f6f8ff 100%);
+    linear-gradient(90deg, rgba(0, 117, 74, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff 0%, #f3faef 46%, #ffffff 100%);
+  background-size: 44px 44px, auto;
 }
 
 * {
@@ -16,7 +17,7 @@ body {
 }
 
 ::selection {
-  background: rgba(122, 193, 67, 0.28);
+  background: rgba(0, 117, 74, 0.18);
 }
 
 button,

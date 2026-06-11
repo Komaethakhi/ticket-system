@@ -50,17 +50,17 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 20,
-    background: "linear-gradient(135deg, rgba(18, 72, 38, 0.96), rgba(70, 154, 58, 0.95))",
+    background: "rgba(255,255,255,0.96)",
     backdropFilter: "blur(18px)",
-    color: "#fff",
+    color: "#006341",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: "14px",
     padding: "0 30px",
     boxSizing: "border-box",
-    borderBottom: "1px solid rgba(255,255,255,0.16)",
-    boxShadow: "0 14px 34px rgba(16, 55, 26, 0.22)"
+    borderBottom: "4px solid #7AC143",
+    boxShadow: "0 12px 30px rgba(0, 99, 65, 0.12)"
   },
   navMobile: {
     alignItems: "stretch",
@@ -72,7 +72,10 @@ const styles = {
     fontSize: "20px",
     fontWeight: "900",
     lineHeight: 1.2,
-    letterSpacing: "-0.02em"
+    letterSpacing: "-0.02em",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "10px"
   },
   logoMobile: {
     fontSize: "16px",
@@ -90,23 +93,24 @@ const styles = {
     gap: "8px"
   },
   navButton: {
-    background: "rgba(255,255,255,0.94)",
-    color: "#1E6B34",
-    border: "1px solid rgba(255,255,255,0.5)",
+    background: "#F2FAED",
+    color: "#006341",
+    border: "1px solid #D9EDCF",
     padding: "8px 16px",
     borderRadius: "999px",
     cursor: "pointer",
     fontWeight: "800",
-    boxShadow: "0 8px 18px rgba(8, 38, 17, 0.12)"
+    boxShadow: "0 8px 18px rgba(0, 99, 65, 0.08)"
   },
   logout: {
-    background: "rgba(16, 24, 40, 0.28)",
+    background: "linear-gradient(135deg, #006341, #008554)",
     color: "#fff",
-    border: "1px solid rgba(255,255,255,0.28)",
+    border: "1px solid #006341",
     padding: "8px 16px",
     borderRadius: "999px",
     cursor: "pointer",
-    fontWeight: "800"
+    fontWeight: "800",
+    boxShadow: "0 12px 24px rgba(0, 99, 65, 0.18)"
   }
 };
 
