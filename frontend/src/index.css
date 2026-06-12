@@ -7,8 +7,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: #17351f;
   background:
-    radial-gradient(circle at 12% 0%, rgba(122, 193, 67, 0.36), transparent 26rem),
-    linear-gradient(135deg, #006341 0%, #0f7d49 42%, #f2faed 100%);
+    radial-gradient(circle at 12% 0%, rgba(201, 164, 65, 0.2), transparent 25rem),
+    radial-gradient(circle at 90% 8%, rgba(0, 99, 65, 0.12), transparent 24rem),
+    linear-gradient(135deg, #f8faf7 0%, #eef2f5 48%, #ffffff 100%);
   background-size: 44px 44px, auto;
 }
 

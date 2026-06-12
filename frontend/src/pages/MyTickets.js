@@ -94,7 +94,7 @@ const styles = {
     padding: "30px",
     boxSizing: "border-box",
     background:
-      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
+      "radial-gradient(circle at 8% 0%, rgba(201,164,65,0.22), transparent 24rem), radial-gradient(circle at 88% 10%, rgba(0,99,65,0.12), transparent 25rem), linear-gradient(135deg, #F8FAF7 0%, #EEF2F5 48%, #FFFFFF 100%)",
     minHeight: "calc(100vh - 64px)",
     overflowX: "hidden"
   },
@@ -110,7 +110,7 @@ const styles = {
     background: "rgba(255,255,255,0.92)",
     borderRadius: "24px",
     overflowWrap: "anywhere",
-    boxShadow: "0 20px 54px rgba(0, 99, 65, 0.12)"
+    boxShadow: "0 20px 54px rgba(31, 45, 38, 0.1)"
   },
   hero: {
     width: "min(920px, 100%)",
@@ -118,10 +118,10 @@ const styles = {
     padding: "34px",
     color: "#fff",
     borderRadius: "28px",
-    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
+    background: "linear-gradient(135deg, #17351F 0%, #2D5A43 58%, #C9A441 100%)",
     border: "1px solid rgba(255,255,255,0.28)",
-    borderLeft: "12px solid #B7E36E",
-    boxShadow: "0 28px 70px rgba(0, 54, 34, 0.3)"
+    borderLeft: "12px solid #C9A441",
+    boxShadow: "0 28px 70px rgba(29, 44, 38, 0.22)"
   },
   badge: {
     display: "inline-block",

@@ -122,7 +122,7 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), radial-gradient(circle at 88% 16%, rgba(255,255,255,0.18), transparent 22rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
+      "radial-gradient(circle at 8% 0%, rgba(201,164,65,0.22), transparent 24rem), radial-gradient(circle at 88% 10%, rgba(0,99,65,0.12), transparent 25rem), linear-gradient(135deg, #F8FAF7 0%, #EEF2F5 48%, #FFFFFF 100%)",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -134,7 +134,7 @@ const styles = {
     maxWidth: "1120px",
     margin: "0 auto",
     position: "relative",
-    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
+    background: "linear-gradient(135deg, #17351F 0%, #2D5A43 58%, #C9A441 100%)",
     color: "#fff",
     borderRadius: "32px",
     padding: "46px",
@@ -143,8 +143,8 @@ const styles = {
     gap: "24px",
     flexWrap: "wrap",
     border: "1px solid rgba(255,255,255,0.28)",
-    borderLeft: "12px solid #B7E36E",
-    boxShadow: "0 30px 80px rgba(0, 54, 34, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)"
+    borderLeft: "12px solid #C9A441",
+    boxShadow: "0 30px 80px rgba(29, 44, 38, 0.24), inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   heroMobile: {
     padding: "28px",
@@ -217,13 +217,13 @@ const styles = {
   },
   heading: {
     margin: 0,
-    color: "#fff",
+    color: "#17351F",
     fontSize: "28px",
     letterSpacing: "-0.03em"
   },
   subText: {
     margin: "6px 0 0",
-    color: "rgba(255,255,255,0.78)"
+    color: "#667085"
   },
   emptyBox: {
     maxWidth: "1120px",
@@ -251,7 +251,7 @@ const styles = {
     borderRadius: "26px",
     border: "1px solid #DCEFD4",
     borderTop: "6px solid #7AC143",
-    boxShadow: "0 24px 60px rgba(0, 99, 65, 0.13)",
+    boxShadow: "0 24px 60px rgba(31, 45, 38, 0.1)",
     backdropFilter: "blur(14px)"
   },
   cardImage: {
@@ -263,7 +263,7 @@ const styles = {
     display: "block",
     marginBottom: "18px",
     border: "1px solid rgba(223, 231, 218, 0.9)",
-    boxShadow: "0 18px 38px rgba(12, 46, 20, 0.12)"
+    boxShadow: "0 18px 38px rgba(31, 45, 38, 0.1)"
   },
   cardTop: {
     display: "flex",

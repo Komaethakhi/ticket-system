@@ -6,8 +6,9 @@
   padding: 28px;
   box-sizing: border-box;
   background:
-    radial-gradient(circle at 12% 0%, rgba(122, 193, 67, 0.38), transparent 26rem),
-    linear-gradient(135deg, #006341 0%, #0f7d49 44%, #eff9ea 100%);
+    radial-gradient(circle at 12% 0%, rgba(201, 164, 65, 0.22), transparent 25rem),
+    radial-gradient(circle at 90% 8%, rgba(0, 99, 65, 0.12), transparent 24rem),
+    linear-gradient(135deg, #f8faf7 0%, #eef2f5 48%, #ffffff 100%);
 }
 
 .login-shell {
@@ -30,7 +31,7 @@
   justify-content: space-between;
   color: #ffffff;
   background:
-    linear-gradient(145deg, rgba(0, 99, 65, 0.96), rgba(122, 193, 67, 0.88)),
+    linear-gradient(145deg, rgba(23, 53, 31, 0.94), rgba(201, 164, 65, 0.78)),
     url("https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80") center/cover;
 }
 
@@ -251,7 +252,7 @@
 @media (max-width: 420px) {
   .login-page {
     padding: 0;
-    background: #ffffff;
+    background: #f8faf7;
   }
 
   .login-shell {

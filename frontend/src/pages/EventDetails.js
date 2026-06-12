@@ -300,7 +300,7 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), radial-gradient(circle at 88% 16%, rgba(255,255,255,0.18), transparent 22rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
+      "radial-gradient(circle at 8% 0%, rgba(201,164,65,0.22), transparent 24rem), radial-gradient(circle at 88% 10%, rgba(0,99,65,0.12), transparent 25rem), linear-gradient(135deg, #F8FAF7 0%, #EEF2F5 48%, #FFFFFF 100%)",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -324,13 +324,13 @@ const styles = {
     boxShadow: "0 10px 24px rgba(31, 58, 26, 0.08)"
   },
   hero: {
-    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
+    background: "linear-gradient(135deg, #17351F 0%, #2D5A43 58%, #C9A441 100%)",
     borderRadius: "30px",
     color: "#fff",
     overflow: "hidden",
     border: "1px solid rgba(255,255,255,0.28)",
-    borderLeft: "12px solid #B7E36E",
-    boxShadow: "0 30px 80px rgba(0, 54, 34, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)"
+    borderLeft: "12px solid #C9A441",
+    boxShadow: "0 30px 80px rgba(29, 44, 38, 0.24), inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   heroWithImage: {
     display: "grid",
@@ -431,7 +431,7 @@ const styles = {
     borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "28px",
-    boxShadow: "0 18px 44px rgba(31, 58, 26, 0.1)"
+    boxShadow: "0 18px 44px rgba(31, 45, 38, 0.1)"
   },
   sectionTitle: {
     margin: "0 0 10px",
@@ -464,7 +464,7 @@ const styles = {
     borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "24px",
-    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)",
+    boxShadow: "0 24px 60px rgba(31, 45, 38, 0.1)",
     alignSelf: "start"
   },
   priceBlock: {
@@ -551,7 +551,7 @@ const styles = {
     borderTop: "6px solid #7AC143",
     borderRadius: "24px",
     padding: "26px",
-    boxShadow: "0 24px 60px rgba(31, 58, 26, 0.14)"
+    boxShadow: "0 24px 60px rgba(31, 45, 38, 0.1)"
   },
   paymentPanelMobile: {
     gridTemplateColumns: "1fr",

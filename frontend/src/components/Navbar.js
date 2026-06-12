@@ -50,7 +50,7 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 20,
-    background: "linear-gradient(135deg, rgba(0, 99, 65, 0.98), rgba(0, 133, 84, 0.96))",
+    background: "linear-gradient(135deg, rgba(23, 53, 31, 0.98), rgba(45, 90, 67, 0.96))",
     backdropFilter: "blur(18px)",
     color: "#fff",
     display: "flex",
@@ -59,8 +59,8 @@ const styles = {
     gap: "14px",
     padding: "0 30px",
     boxSizing: "border-box",
-    borderBottom: "4px solid #7AC143",
-    boxShadow: "0 14px 34px rgba(0, 69, 44, 0.24)"
+    borderBottom: "4px solid #C9A441",
+    boxShadow: "0 14px 34px rgba(29, 44, 38, 0.22)"
   },
   navMobile: {
     alignItems: "stretch",
