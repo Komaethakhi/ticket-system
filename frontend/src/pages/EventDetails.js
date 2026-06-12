@@ -21,7 +21,6 @@ function TrainingDetails() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
-  const [transactionId, setTransactionId] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const isMobile = useIsMobile();
@@ -56,7 +55,6 @@ function TrainingDetails() {
     if (quantity < 100) {
       setQuantity(quantity + 1);
       setPaymentOrder(null);
-      setTransactionId("");
       setWhatsappNumber("");
       setPaymentMessage("");
     }
@@ -66,7 +64,6 @@ function TrainingDetails() {
     if (quantity > 1) {
       setQuantity(quantity - 1);
       setPaymentOrder(null);
-      setTransactionId("");
       setWhatsappNumber("");
       setPaymentMessage("");
     }
@@ -89,7 +86,6 @@ function TrainingDetails() {
       });
 
       setPaymentOrder(orderRes.data);
-      setTransactionId("");
     } catch (err) {
       alert(err.response?.data?.message || "Payment failed");
     } finally {
@@ -108,14 +104,15 @@ function TrainingDetails() {
     try {
       setPaying(true);
       setPaymentMessage("");
-      await api.post("/orders/submit-payment", {
+      const res = await api.post("/orders/submit-payment", {
         orderId: paymentOrder.orderId,
-        transactionId,
         whatsappNumber
       });
-      setPaymentMessage("Payment submitted. Admin will verify and confirm your ticket.");
+      if (res.data?.whatsapp?.link) {
+        window.open(res.data.whatsapp.link, "_blank", "noopener,noreferrer");
+      }
+      setPaymentMessage("Payment confirmed. Your ticket is booked.");
       setPaymentOrder(null);
-      setTransactionId("");
       setWhatsappNumber("");
       navigate("/my-tickets");
     } catch (err) {
@@ -210,7 +207,7 @@ function TrainingDetails() {
               </div>
               <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Booking status</span>
-                <strong>Manual payment verification</strong>
+                <strong>Auto confirmed after payment</strong>
               </div>
             </div>
 
@@ -247,20 +244,12 @@ function TrainingDetails() {
               <div>
                 <h2 style={styles.sectionTitle}>Pay Using UPI QR</h2>
                 <p style={styles.bodyText}>
-                  Scan the QR code, pay the auto-filled amount, then enter the UPI transaction ID.
-                  Admin will verify it before confirming your ticket.
+                  Scan the QR code and pay the exact amount. After payment, confirm below to book
+                  your ticket instantly.
                 </p>
                 <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Payee</span>
                   <strong>{paymentOrder.payment.payeeName}</strong>
-                </div>
-                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
-                  <span>UPI ID</span>
-                  <strong>{paymentOrder.payment.upiId}</strong>
-                </div>
-                <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
-                  <span>UPI Number</span>
-                  <strong>{paymentOrder.payment.upiNumber}</strong>
                 </div>
                 <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Tickets</span>
@@ -294,19 +283,9 @@ function TrainingDetails() {
                   placeholder="Enter WhatsApp number"
                   style={styles.transactionInput}
                 />
-                <label style={styles.inputLabel} htmlFor="transactionId">
-                  UPI Transaction ID
-                </label>
-                <input
-                  id="transactionId"
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value.toUpperCase())}
-                  placeholder="Enter transaction/reference ID"
-                  style={styles.transactionInput}
-                />
                 {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
                 <button disabled={paying} style={styles.bookBtn}>
-                  {paying ? "Submitting..." : "Submit for Verification"}
+                  {paying ? "Confirming..." : "Payment Done - Confirm Order"}
                 </button>
               </form>
             </section>
@@ -321,8 +300,7 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
-    backgroundSize: "46px 46px, auto",
+      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), radial-gradient(circle at 88% 16%, rgba(255,255,255,0.18), transparent 22rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -346,13 +324,13 @@ const styles = {
     boxShadow: "0 10px 24px rgba(31, 58, 26, 0.08)"
   },
   hero: {
-    background: "#FFFFFF",
+    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
     borderRadius: "30px",
-    color: "#17351F",
+    color: "#fff",
     overflow: "hidden",
-    border: "1px solid #DCEFD4",
-    borderLeft: "12px solid #7AC143",
-    boxShadow: "0 30px 80px rgba(0, 99, 65, 0.16), inset 0 1px 0 rgba(255,255,255,0.9)"
+    border: "1px solid rgba(255,255,255,0.28)",
+    borderLeft: "12px solid #B7E36E",
+    boxShadow: "0 30px 80px rgba(0, 54, 34, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   heroWithImage: {
     display: "grid",
@@ -371,8 +349,8 @@ const styles = {
   },
   heroImageWrap: {
     minHeight: "400px",
-    background: "#F0FAEA",
-    borderLeft: "1px solid #DCEFD4"
+    background: "#0E3F1F",
+    borderLeft: "1px solid rgba(255,255,255,0.16)"
   },
   heroImage: {
     width: "100%",
@@ -384,9 +362,9 @@ const styles = {
   },
   badge: {
     display: "inline-block",
-    background: "#EAF8E3",
-    color: "#006341",
-    border: "1px solid #CDEBBF",
+    background: "rgba(255,255,255,0.16)",
+    color: "#fff",
+    border: "1px solid rgba(255,255,255,0.32)",
     borderRadius: "999px",
     padding: "7px 12px",
     fontSize: "13px",
@@ -407,7 +385,7 @@ const styles = {
     fontSize: "16px",
     lineHeight: 1.6,
     margin: 0,
-    color: "#536B4E"
+    color: "rgba(255,255,255,0.9)"
   },
   metaGrid: {
     display: "grid",
@@ -419,8 +397,8 @@ const styles = {
     gridTemplateColumns: "1fr"
   },
   metaItem: {
-    background: "linear-gradient(135deg, #006341, #008554)",
-    border: "1px solid #006341",
+    background: "rgba(255,255,255,0.16)",
+    border: "1px solid rgba(255,255,255,0.24)",
     borderRadius: "18px",
     padding: "16px",
     boxShadow: "0 14px 30px rgba(0, 99, 65, 0.18)"

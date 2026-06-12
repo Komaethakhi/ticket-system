@@ -6,9 +6,8 @@
   padding: 28px;
   box-sizing: border-box;
   background:
-    linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px),
-    linear-gradient(180deg, #ffffff 0%, #f4faf0 48%, #ffffff 100%);
-  background-size: 46px 46px, auto;
+    radial-gradient(circle at 12% 0%, rgba(122, 193, 67, 0.38), transparent 26rem),
+    linear-gradient(135deg, #006341 0%, #0f7d49 44%, #eff9ea 100%);
 }
 
 .login-shell {

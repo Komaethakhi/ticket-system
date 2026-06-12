@@ -122,8 +122,7 @@ const styles = {
   page: {
     minHeight: "calc(100vh - 64px)",
     background:
-      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
-    backgroundSize: "46px 46px, auto",
+      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), radial-gradient(circle at 88% 16%, rgba(255,255,255,0.18), transparent 22rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
     padding: "38px",
     boxSizing: "border-box",
     overflowX: "hidden"
@@ -135,17 +134,17 @@ const styles = {
     maxWidth: "1120px",
     margin: "0 auto",
     position: "relative",
-    background: "#FFFFFF",
-    color: "#17351F",
+    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
+    color: "#fff",
     borderRadius: "32px",
     padding: "46px",
     display: "flex",
     justifyContent: "space-between",
     gap: "24px",
     flexWrap: "wrap",
-    border: "1px solid #DCEFD4",
-    borderLeft: "12px solid #7AC143",
-    boxShadow: "0 28px 70px rgba(0, 99, 65, 0.16), inset 0 1px 0 rgba(255,255,255,0.9)"
+    border: "1px solid rgba(255,255,255,0.28)",
+    borderLeft: "12px solid #B7E36E",
+    boxShadow: "0 30px 80px rgba(0, 54, 34, 0.34), inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   heroMobile: {
     padding: "28px",
@@ -153,9 +152,9 @@ const styles = {
   },
   badge: {
     display: "inline-block",
-    background: "#EAF8E3",
-    color: "#006341",
-    border: "1px solid #CDEBBF",
+    background: "rgba(255,255,255,0.16)",
+    color: "#fff",
+    border: "1px solid rgba(255,255,255,0.32)",
     borderRadius: "999px",
     padding: "8px 14px",
     fontSize: "13px",
@@ -174,22 +173,22 @@ const styles = {
   },
   heroText: {
     margin: 0,
-    color: "#536B4E",
+    color: "rgba(255,255,255,0.9)",
     fontSize: "17px",
     maxWidth: "560px"
   },
   summaryBox: {
     minWidth: "170px",
-    background: "linear-gradient(135deg, #006341, #008554)",
+    background: "rgba(255,255,255,0.16)",
     color: "#fff",
-    border: "1px solid #006341",
+    border: "1px solid rgba(255,255,255,0.24)",
     borderRadius: "22px",
     padding: "22px",
     alignSelf: "stretch",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    boxShadow: "0 18px 38px rgba(0, 99, 65, 0.2)"
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18)"
   },
   summaryBoxMobile: {
     width: "100%",
@@ -218,18 +217,18 @@ const styles = {
   },
   heading: {
     margin: 0,
-    color: "#17351F",
+    color: "#fff",
     fontSize: "28px",
     letterSpacing: "-0.03em"
   },
   subText: {
     margin: "6px 0 0",
-    color: "#5E6A59"
+    color: "rgba(255,255,255,0.78)"
   },
   emptyBox: {
     maxWidth: "1120px",
     margin: "0 auto",
-    background: "#FFFFFF",
+    background: "rgba(255,255,255,0.96)",
     border: "1px solid #DCEFD4",
     borderRadius: "22px",
     padding: "28px",

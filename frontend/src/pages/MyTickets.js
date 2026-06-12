@@ -21,7 +21,6 @@ function MyTickets() {
           quantity: order.quantity,
           total: order.amount,
           paymentId: order.payment_id,
-          transactionId: order.transaction_id,
           whatsappNumber: order.whatsapp_number,
           status: order.status,
           adminNote: order.admin_note,
@@ -72,7 +71,6 @@ function MyTickets() {
             <p>
               <b>Rs. {t.total}</b>
             </p>
-            {t.transactionId && <p>Transaction ID: {t.transactionId}</p>}
             {t.whatsappNumber && <p>WhatsApp Number: {t.whatsappNumber}</p>}
             {t.bookedAt && <p>Booked At: {new Date(t.bookedAt).toLocaleString()}</p>}
             {t.verifiedAt && <p>Verified At: {new Date(t.verifiedAt).toLocaleString()}</p>}
@@ -85,7 +83,7 @@ function MyTickets() {
 }
 
 const formatStatus = (status) => {
-  if (status === "PENDING_VERIFICATION") return "Pending admin verification";
+  if (status === "PENDING_VERIFICATION") return "Confirmation in progress";
   if (status === "CONFIRMED") return "Confirmed";
   if (status === "REJECTED") return "Payment rejected";
   return status || "Pending";
@@ -96,8 +94,7 @@ const styles = {
     padding: "30px",
     boxSizing: "border-box",
     background:
-      "linear-gradient(90deg, rgba(0, 99, 65, 0.05) 1px, transparent 1px), linear-gradient(180deg, #FFFFFF 0%, #F4FAF0 42%, #FFFFFF 100%)",
-    backgroundSize: "46px 46px, auto",
+      "radial-gradient(circle at 10% 0%, rgba(122, 193, 67, 0.4), transparent 26rem), linear-gradient(135deg, #006341 0%, #0E7A48 46%, #EAF8E3 100%)",
     minHeight: "calc(100vh - 64px)",
     overflowX: "hidden"
   },
@@ -119,20 +116,20 @@ const styles = {
     width: "min(920px, 100%)",
     margin: "0 auto 24px",
     padding: "34px",
-    color: "#17351F",
+    color: "#fff",
     borderRadius: "28px",
-    background: "#FFFFFF",
-    border: "1px solid #DCEFD4",
-    borderLeft: "12px solid #7AC143",
-    boxShadow: "0 28px 70px rgba(0, 99, 65, 0.14)"
+    background: "linear-gradient(135deg, #006341 0%, #008554 62%, #7AC143 100%)",
+    border: "1px solid rgba(255,255,255,0.28)",
+    borderLeft: "12px solid #B7E36E",
+    boxShadow: "0 28px 70px rgba(0, 54, 34, 0.3)"
   },
   badge: {
     display: "inline-block",
     padding: "8px 14px",
     borderRadius: "999px",
-    background: "#EAF8E3",
-    color: "#006341",
-    border: "1px solid #CDEBBF",
+    background: "rgba(255,255,255,0.16)",
+    color: "#fff",
+    border: "1px solid rgba(255,255,255,0.32)",
     fontSize: "12px",
     fontWeight: "900",
     letterSpacing: "0.06em",
@@ -145,7 +142,7 @@ const styles = {
   },
   subText: {
     margin: 0,
-    color: "#536B4E"
+    color: "rgba(255,255,255,0.84)"
   },
   cardTitle: {
     margin: "0 0 8px",

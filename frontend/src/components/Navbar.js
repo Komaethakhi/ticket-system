@@ -50,9 +50,9 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 20,
-    background: "rgba(255,255,255,0.96)",
+    background: "linear-gradient(135deg, rgba(0, 99, 65, 0.98), rgba(0, 133, 84, 0.96))",
     backdropFilter: "blur(18px)",
-    color: "#006341",
+    color: "#fff",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -60,7 +60,7 @@ const styles = {
     padding: "0 30px",
     boxSizing: "border-box",
     borderBottom: "4px solid #7AC143",
-    boxShadow: "0 12px 30px rgba(0, 99, 65, 0.12)"
+    boxShadow: "0 14px 34px rgba(0, 69, 44, 0.24)"
   },
   navMobile: {
     alignItems: "stretch",
@@ -93,9 +93,9 @@ const styles = {
     gap: "8px"
   },
   navButton: {
-    background: "#F2FAED",
+    background: "rgba(255,255,255,0.96)",
     color: "#006341",
-    border: "1px solid #D9EDCF",
+    border: "1px solid rgba(255,255,255,0.55)",
     padding: "8px 16px",
     borderRadius: "999px",
     cursor: "pointer",
