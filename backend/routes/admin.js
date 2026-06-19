@@ -4,7 +4,7 @@ const router = express.Router();
 
 const Order = require("../models/Order");
 const User = require("../models/User");
-const sendOrderMail = require("../utils/email");
+const { buildOrderWhatsAppLink } = require("../utils/whatsapp");
 const { JWT_SECRET } = require("../middleware/auth");
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -45,98 +45,72 @@ const escapeCsv = (value) => {
   return text;
 };
 
-const buildWhatsAppMessage = (order) =>
+const normalizeMobileNumber = (number) => String(number || "").replace(/\D/g, "");
+
+const isValidMobileNumber = (number) => {
+  if (!number) {
+    return true;
+  }
+
+  return number.length >= 10 && number.length <= 15;
+};
+
+const buildCoachGreetingMessage = (coach) =>
   [
-    "Congratulations! Your order was placed successfully.",
-    `Order ID: ${order._id}`,
-    `Herbalife ID: ${order.userId?.coachId || "Unknown"}`,
-    `Training: ${order.eventId?.title || "Unknown event"}`,
-    `Date: ${order.eventId?.date || ""}`,
-    `Location: ${order.eventId?.location || ""}`,
-    `Tickets: ${order.quantity}`,
-    `Amount: Rs. ${order.amount}`,
-    `Status: ${order.status}`
+    `Vanakkam ${coach.coachId},`,
+    "Welcome to Herbalife Training Portal.",
+    "Your Herbalife ID is active for event ticket booking.",
+    "Please login, choose your event, and complete payment to confirm your ticket."
   ].join("\n");
 
-const buildWhatsAppLink = (order) => {
-  if (!order.whatsapp_number) {
+const buildCoachGreetingLink = (coach) => {
+  if (!coach.mobileNumber) {
     return "";
   }
 
-  const number = order.whatsapp_number.startsWith("91")
-    ? order.whatsapp_number
-    : `91${order.whatsapp_number}`;
+  const number = coach.mobileNumber.startsWith("91")
+    ? coach.mobileNumber
+    : `91${coach.mobileNumber}`;
 
-  return `https://wa.me/${number}?text=${encodeURIComponent(buildWhatsAppMessage(order))}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(buildCoachGreetingMessage(coach))}`;
 };
 
-const parseEventEndDate = (eventDate) => {
-  const match = String(eventDate || "").trim().match(/^(\d{1,2})\s+([A-Z]+)\s+(\d{4})$/i);
+const formatCoachContact = (coach) => ({
+  id: coach._id,
+  coachId: coach.coachId,
+  mobileNumber: coach.mobileNumber || "",
+  greetingLink: buildCoachGreetingLink(coach),
+  createdAt: coach.createdAt,
+  updatedAt: coach.updatedAt
+});
 
-  if (!match) {
-    return null;
+const parseCoachContactEntry = (entry) => {
+  const text = String(entry || "").trim().toUpperCase();
+  const coachMatch = text.match(/(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}/);
+
+  if (!coachMatch) {
+    return {
+      coachId: "",
+      mobileNumber: "",
+      raw: text
+    };
   }
 
-  const months = {
-    JANUARY: 0,
-    FEBRUARY: 1,
-    MARCH: 2,
-    APRIL: 3,
-    MAY: 4,
-    JUNE: 5,
-    JULY: 6,
-    AUGUST: 7,
-    SEPTEMBER: 8,
-    OCTOBER: 9,
-    NOVEMBER: 10,
-    DECEMBER: 11
+  const coachId = coachMatch[0];
+  const mobileNumber = normalizeMobileNumber(text.replace(coachId, ""));
+
+  return {
+    coachId,
+    mobileNumber,
+    raw: text
   };
-  const day = Number(match[1]);
-  const month = months[match[2].toUpperCase()];
-  const year = Number(match[3]);
-
-  if (!Number.isInteger(day) || month === undefined || !Number.isInteger(year)) {
-    return null;
-  }
-
-  return new Date(year, month, day, 23, 59, 59, 999);
-};
-
-const isEventOver = (eventDate) => {
-  const endDate = parseEventEndDate(eventDate);
-  return Boolean(endDate && endDate < new Date());
 };
 
 const getConfirmedOrders = () =>
   Order.find({ status: "CONFIRMED" })
-    .populate("userId", "coachId")
+    .populate("userId", "coachId mobileNumber")
     .populate("eventId", "title date location ticket_price")
     .sort({ booked_at: -1 });
-
-const getPendingOrders = async () => {
-  const pendingOrders = await Order.find({ status: "PENDING_VERIFICATION" })
-    .populate("userId", "coachId")
-    .populate("eventId", "title date location ticket_price")
-    .sort({ submitted_at: -1, booked_at: -1 });
-
-  const expiredPendingOrders = pendingOrders.filter((order) =>
-    isEventOver(order.eventId?.date)
-  );
-
-  if (expiredPendingOrders.length > 0) {
-    await Order.updateMany(
-      { _id: { $in: expiredPendingOrders.map((order) => order._id) } },
-      {
-        $set: {
-          status: "CANCELLED",
-          admin_note: "Event ended before payment verification"
-        }
-      }
-    );
-  }
-
-  return pendingOrders.filter((order) => !isEventOver(order.eventId?.date));
-};
 
 const formatOrder = (order) => ({
   orderId: order._id,
@@ -149,8 +123,8 @@ const formatOrder = (order) => ({
   amount: order.amount,
   paymentId: order.payment_id || "",
   transactionId: order.transaction_id || "",
-  whatsappNumber: order.whatsapp_number || "",
-  whatsappLink: buildWhatsAppLink(order),
+  whatsappNumber: order.whatsapp_number || order.userId?.mobileNumber || "",
+  whatsappLink: buildOrderWhatsAppLink(order),
   paymentMethod: order.payment_method || "",
   status: order.status,
   bookedAt: order.booked_at,
@@ -200,13 +174,11 @@ router.post("/login", async (req, res) => {
 
 router.get("/summary", adminAuthMiddleware, async (req, res) => {
   try {
-    const [orders, pendingOrders, registeredCoachCount] = await Promise.all([
+    const [orders, coaches] = await Promise.all([
       getConfirmedOrders(),
-      getPendingOrders(),
-      User.countDocuments()
+      User.find().select("coachId mobileNumber createdAt updatedAt").sort({ coachId: 1 })
     ]);
     const rows = orders.map(formatOrder);
-    const pendingRows = pendingOrders.map(formatOrder);
 
     const coachMap = new Map();
     rows.forEach((row) => {
@@ -232,13 +204,14 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
         totalTicketsSold: rows.reduce((sum, row) => sum + row.quantity, 0),
         totalRevenue: rows.reduce((sum, row) => sum + row.amount, 0),
         totalOrders: rows.length,
-        pendingVerifications: pendingRows.length,
         uniqueCoaches: coachSummary.length,
-        registeredCoachIds: registeredCoachCount
+        registeredCoachIds: coaches.length,
+        coachContacts: coaches.filter((coach) => coach.mobileNumber).length,
+        missingCoachContacts: coaches.filter((coach) => !coach.mobileNumber).length
       },
       coachSummary,
-      orders: rows,
-      pendingOrders: pendingRows
+      coachContacts: coaches.map(formatCoachContact),
+      orders: rows
     });
   } catch (err) {
     console.error("Admin summary error:", err);
@@ -246,113 +219,44 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
   }
 });
 
-router.post("/orders/:id/approve", adminAuthMiddleware, async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id)
-      .populate("eventId")
-      .populate("userId");
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    if (order.status !== "PENDING_VERIFICATION") {
-      return res.status(400).json({ message: "Only pending payments can be approved" });
-    }
-
-    if (isEventOver(order.eventId?.date)) {
-      order.status = "CANCELLED";
-      order.admin_note = "Event ended before payment verification";
-      await order.save();
-      return res.status(400).json({
-        code: "EVENT_OVER",
-        orderId: order._id,
-        message: "This event is already over. Pending payment was removed."
-      });
-    }
-
-    order.status = "CONFIRMED";
-    order.verified_at = new Date();
-    order.admin_note = req.body.note || "";
-    await order.save();
-
-    if (order.userId.email) {
-      await sendOrderMail(order.userId.email, order, order.eventId);
-    }
-
-    res.json({ success: true, order: formatOrder(order) });
-  } catch (err) {
-    console.error("Approve payment error:", err);
-    res.status(500).json({ message: "Failed to approve payment" });
-  }
-});
-
-router.post("/orders/:id/reject", adminAuthMiddleware, async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id)
-      .populate("eventId")
-      .populate("userId");
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    if (order.status !== "PENDING_VERIFICATION") {
-      return res.status(400).json({ message: "Only pending payments can be rejected" });
-    }
-
-    if (isEventOver(order.eventId?.date)) {
-      order.status = "CANCELLED";
-      order.admin_note = "Event ended before payment verification";
-      await order.save();
-      return res.status(400).json({
-        code: "EVENT_OVER",
-        orderId: order._id,
-        message: "This event is already over. Pending payment was removed."
-      });
-    }
-
-    order.status = "REJECTED";
-    order.verified_at = new Date();
-    order.admin_note = req.body.note || "Payment could not be verified";
-    await order.save();
-
-    res.json({ success: true, order: formatOrder(order) });
-  } catch (err) {
-    console.error("Reject payment error:", err);
-    res.status(500).json({ message: "Failed to reject payment" });
-  }
-});
-
 router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
   try {
     const rawCoachIds = Array.isArray(req.body.coachIds)
       ? req.body.coachIds
-      : String(req.body.coachIds || "").split(/[\s,;]+/);
+      : String(req.body.coachIds || "").split(/\n+/);
 
-    const normalizedCoachIds = rawCoachIds
-      .map((coachId) => String(coachId || "").trim().toUpperCase())
-      .filter(Boolean);
+    const parsedEntries = rawCoachIds
+      .map(parseCoachContactEntry)
+      .filter((entry) => entry.raw);
     const seenCoachIds = new Set();
     const duplicateCoachIds = [];
-    const uniqueCoachIds = [];
+    const uniqueEntries = [];
 
-    normalizedCoachIds.forEach((coachId) => {
-      if (seenCoachIds.has(coachId)) {
-        duplicateCoachIds.push(coachId);
+    parsedEntries.forEach((entry) => {
+      if (seenCoachIds.has(entry.coachId)) {
+        duplicateCoachIds.push(entry.coachId || entry.raw);
         return;
       }
 
-      seenCoachIds.add(coachId);
-      uniqueCoachIds.push(coachId);
+      if (entry.coachId) {
+        seenCoachIds.add(entry.coachId);
+      }
+      uniqueEntries.push(entry);
     });
 
-    const invalidCoachIds = uniqueCoachIds.filter(
-      (coachId) => !/^[A-Z0-9]{9,10}$/.test(coachId)
+    const invalidCoachIds = uniqueEntries.filter(
+      (entry) => !/^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}$/.test(entry.coachId)
+    ).map((entry) => entry.raw);
+    const invalidMobileNumbers = uniqueEntries.filter(
+      (entry) => entry.coachId && !entry.mobileNumber
+    ).map((entry) => `${entry.coachId}: mobile number required`);
+    const malformedMobileNumbers = uniqueEntries.filter(
+      (entry) => entry.coachId && entry.mobileNumber && !isValidMobileNumber(entry.mobileNumber)
+    ).map((entry) => `${entry.coachId}: ${entry.mobileNumber}`);
+    const validEntries = uniqueEntries.filter(
+      (entry) => /^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}$/.test(entry.coachId) && entry.mobileNumber && isValidMobileNumber(entry.mobileNumber)
     );
-    const validCoachIds = uniqueCoachIds.filter(
-      (coachId) => /^[A-Z0-9]{9,10}$/.test(coachId)
-    );
+    const validCoachIds = validEntries.map((entry) => entry.coachId);
 
     if (validCoachIds.length === 0) {
       return res.status(400).json({
@@ -361,7 +265,8 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
         skipped: duplicateCoachIds,
         duplicate: duplicateCoachIds,
         existing: [],
-        invalid: invalidCoachIds
+        updated: [],
+        invalid: [...invalidCoachIds, ...invalidMobileNumbers, ...malformedMobileNumbers]
       });
     }
 
@@ -372,9 +277,30 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
     const newCoachIds = validCoachIds.filter(
       (coachId) => !existingCoachIds.has(coachId)
     );
+    const mobileByCoachId = new Map(
+      validEntries.map((entry) => [entry.coachId, entry.mobileNumber])
+    );
 
     if (newCoachIds.length > 0) {
-      await User.insertMany(newCoachIds.map((coachId) => ({ coachId })));
+      await User.insertMany(
+        newCoachIds.map((coachId) => ({
+          coachId,
+          mobileNumber: mobileByCoachId.get(coachId)
+        }))
+      );
+    }
+
+    const updateEntries = validEntries.filter(
+      (entry) => existingCoachIds.has(entry.coachId) && entry.mobileNumber
+    );
+
+    if (updateEntries.length > 0) {
+      await Promise.all(updateEntries.map((entry) =>
+        User.updateOne(
+          { coachId: entry.coachId },
+          { $set: { mobileNumber: entry.mobileNumber } }
+        )
+      ));
     }
 
     res.status(201).json({
@@ -383,11 +309,40 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
       skipped: [...Array.from(existingCoachIds), ...duplicateCoachIds],
       duplicate: duplicateCoachIds,
       existing: Array.from(existingCoachIds),
-      invalid: invalidCoachIds
+      updated: updateEntries.map((entry) => entry.coachId),
+      invalid: [...invalidCoachIds, ...invalidMobileNumbers, ...malformedMobileNumbers]
     });
   } catch (err) {
     console.error("Add coach IDs error:", err);
     res.status(500).json({ message: "Failed to add coach IDs" });
+  }
+});
+
+router.put("/coaches/:id/contact", adminAuthMiddleware, async (req, res) => {
+  try {
+    const mobileNumber = normalizeMobileNumber(req.body.mobileNumber);
+
+    if (!isValidMobileNumber(mobileNumber)) {
+      return res.status(400).json({ message: "Enter a valid mobile number" });
+    }
+
+    const coach = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: { mobileNumber } },
+      { new: true, runValidators: true }
+    ).select("coachId mobileNumber createdAt updatedAt");
+
+    if (!coach) {
+      return res.status(404).json({ message: "Coach ID not found" });
+    }
+
+    res.json({
+      success: true,
+      coach: formatCoachContact(coach)
+    });
+  } catch (err) {
+    console.error("Update coach contact error:", err);
+    res.status(500).json({ message: "Failed to update coach contact" });
   }
 });
 

@@ -10,6 +10,10 @@ const UserSchema = new mongoose.Schema(
       maxlength: 10,
       trim: true,
       uppercase: true
+    },
+    mobileNumber: {
+      type: String,
+      trim: true
     }
   },
   { timestamps: true }

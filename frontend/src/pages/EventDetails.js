@@ -24,7 +24,6 @@ function TrainingDetails() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
-  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const isMobile = useIsMobile();
 
@@ -58,7 +57,6 @@ function TrainingDetails() {
     if (quantity < 100) {
       setQuantity(quantity + 1);
       setPaymentOrder(null);
-      setWhatsappNumber("");
       setPaymentMessage("");
     }
   };
@@ -67,7 +65,6 @@ function TrainingDetails() {
     if (quantity > 1) {
       setQuantity(quantity - 1);
       setPaymentOrder(null);
-      setWhatsappNumber("");
       setPaymentMessage("");
     }
   };
@@ -108,15 +105,13 @@ function TrainingDetails() {
       setPaying(true);
       setPaymentMessage("");
       const res = await api.post("/orders/submit-payment", {
-        orderId: paymentOrder.orderId,
-        whatsappNumber
+        orderId: paymentOrder.orderId
       });
       if (res.data?.whatsapp?.link) {
         window.open(res.data.whatsapp.link, "_blank", "noopener,noreferrer");
       }
       setPaymentMessage("Payment confirmed. Your ticket is booked.");
       setPaymentOrder(null);
-      setWhatsappNumber("");
       navigate("/my-tickets");
     } catch (err) {
       setPaymentMessage(err.response?.data?.message || "Payment submission failed");
@@ -276,16 +271,6 @@ function TrainingDetails() {
               </div>
 
               <form onSubmit={handleSubmitPayment} style={styles.transactionForm}>
-                <label style={styles.inputLabel} htmlFor="whatsappNumber">
-                  WhatsApp Number
-                </label>
-                <input
-                  id="whatsappNumber"
-                  value={whatsappNumber}
-                  onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, "").slice(0, 15))}
-                  placeholder="Enter WhatsApp number"
-                  style={styles.transactionInput}
-                />
                 {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
                 <button className="details-book-button" disabled={paying} style={styles.bookBtn}>
                   {paying ? "Confirming..." : "Payment Done - Confirm Order"}

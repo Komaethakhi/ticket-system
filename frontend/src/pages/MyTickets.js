@@ -83,9 +83,7 @@ function MyTickets() {
 }
 
 const formatStatus = (status) => {
-  if (status === "PENDING_VERIFICATION") return "Confirmation in progress";
   if (status === "CONFIRMED") return "Confirmed";
-  if (status === "REJECTED") return "Payment rejected";
   return status || "Pending";
 };
 

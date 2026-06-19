@@ -22,7 +22,7 @@ const orderSchema = new mongoose.Schema({
 
   payment_method: {
     type: String,
-    enum: ["RAZORPAY", "UPI_QR"],
+    enum: ["UPI_QR"],
     default: "UPI_QR"
   },
 
@@ -39,14 +39,6 @@ const orderSchema = new mongoose.Schema({
     trim: true
   },
 
-  razorpay_order_id: {
-    type: String
-  },
-
-  razorpay_signature: {
-    type: String
-  },
-
   amount: {
     type: Number,
     required: true
@@ -61,7 +53,7 @@ const orderSchema = new mongoose.Schema({
   // ticket status
   status: {
     type: String,
-    enum: ["PENDING", "PENDING_VERIFICATION", "CONFIRMED", "REJECTED", "CANCELLED", "USED"],
+    enum: ["PENDING", "CONFIRMED", "CANCELLED", "USED"],
     default: "PENDING"
   },
 

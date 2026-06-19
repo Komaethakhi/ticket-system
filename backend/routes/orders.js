@@ -6,6 +6,10 @@ const Event = require("../models/Event");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const sendOrderMail = require("../utils/email");
+const {
+  buildOrderWhatsAppLink,
+  sendOrderWhatsAppConfirmation
+} = require("../utils/whatsapp");
 const { authMiddleware } = require("../middleware/auth");
 
 const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "9842426546@axisbank";
@@ -22,77 +26,6 @@ const buildUpiLink = ({ amount, orderId }) => {
   });
 
   return `upi://pay?${params.toString()}`;
-};
-
-const buildWhatsAppMessage = (order) =>
-  [
-    "Order confirmed.",
-    `Order ID: ${order._id}`,
-    `Herbalife ID: ${order.userId?.coachId || "Unknown"}`,
-    `Training: ${order.eventId?.title || "Unknown event"}`,
-    `Date: ${order.eventId?.date || ""}`,
-    `Location: ${order.eventId?.location || ""}`,
-    `Tickets: ${order.quantity}`,
-    `Amount: Rs. ${order.amount}`,
-    "Status: CONFIRMED"
-  ].join("\n");
-
-const normalizeWhatsAppRecipient = (number) => {
-  const digits = String(number || "").replace(/\D/g, "");
-
-  if (!digits) {
-    return "";
-  }
-
-  return digits.startsWith("91") ? digits : `91${digits}`;
-};
-
-const buildWhatsAppLink = (order) => {
-  const recipient = normalizeWhatsAppRecipient(order.whatsapp_number);
-
-  if (!recipient) {
-    return "";
-  }
-
-  return `https://wa.me/${recipient}?text=${encodeURIComponent(buildWhatsAppMessage(order))}`;
-};
-
-const sendWhatsAppConfirmation = async (order) => {
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const recipient = normalizeWhatsAppRecipient(order.whatsapp_number);
-
-  if (!token || !phoneNumberId || !recipient) {
-    return { sent: false, reason: "WHATSAPP_API_NOT_CONFIGURED" };
-  }
-
-  if (typeof fetch !== "function") {
-    return { sent: false, reason: "FETCH_NOT_AVAILABLE" };
-  }
-
-  const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to: recipient,
-      type: "text",
-      text: {
-        preview_url: false,
-        body: buildWhatsAppMessage(order)
-      }
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`WhatsApp confirmation failed: ${errorText}`);
-  }
-
-  return { sent: true };
 };
 
 router.post("/create", authMiddleware, async (req, res) => {
@@ -112,6 +45,12 @@ router.post("/create", authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.mobileNumber) {
+      return res.status(400).json({
+        message: "WhatsApp number is not saved for this coach ID. Please contact admin."
+      });
     }
 
     const amount = event.ticket_price * ticketCount;
@@ -153,16 +92,11 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 router.post("/submit-payment", authMiddleware, async (req, res) => {
-  const { orderId, transactionId, whatsappNumber } = req.body;
+  const { orderId, transactionId } = req.body;
   const normalizedTransactionId = String(transactionId || "").trim().toUpperCase();
-  const normalizedWhatsappNumber = String(whatsappNumber || "").replace(/\D/g, "");
 
   if (!orderId) {
     return res.status(400).json({ message: "Order ID is required" });
-  }
-
-  if (normalizedWhatsappNumber && (normalizedWhatsappNumber.length < 10 || normalizedWhatsappNumber.length > 15)) {
-    return res.status(400).json({ message: "Enter a valid WhatsApp number" });
   }
 
   try {
@@ -192,9 +126,15 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "This order is already confirmed" });
     }
 
+    if (!order.userId.mobileNumber) {
+      return res.status(400).json({
+        message: "WhatsApp number is not saved for this coach ID. Please contact admin."
+      });
+    }
+
     order.payment_id = normalizedTransactionId || `UPI-${order._id}`;
     order.transaction_id = normalizedTransactionId || undefined;
-    order.whatsapp_number = normalizedWhatsappNumber;
+    order.whatsapp_number = order.userId.mobileNumber;
     order.payment_method = "UPI_QR";
     order.status = "CONFIRMED";
     order.submitted_at = new Date();
@@ -206,14 +146,12 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
       await sendOrderMail(order.userId.email, order, order.eventId);
     }
 
-    let whatsappDelivery = { sent: false, reason: "NO_WHATSAPP_NUMBER" };
-    if (normalizedWhatsappNumber) {
-      try {
-        whatsappDelivery = await sendWhatsAppConfirmation(order);
-      } catch (whatsappErr) {
-        console.error("WhatsApp confirmation error:", whatsappErr);
-        whatsappDelivery = { sent: false, reason: "WHATSAPP_SEND_FAILED" };
-      }
+    let whatsappDelivery;
+    try {
+      whatsappDelivery = await sendOrderWhatsAppConfirmation(order);
+    } catch (whatsappErr) {
+      console.error("WhatsApp confirmation error:", whatsappErr);
+      whatsappDelivery = { sent: false, reason: "WHATSAPP_SEND_FAILED" };
     }
 
     res.json({
@@ -222,7 +160,7 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
       order,
       whatsapp: {
         ...whatsappDelivery,
-        link: buildWhatsAppLink(order)
+        link: buildOrderWhatsAppLink(order)
       }
     });
   } catch (err) {
@@ -235,7 +173,7 @@ router.get("/my", authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find({
       userId: req.user.userId,
-      status: { $in: ["PENDING_VERIFICATION", "CONFIRMED", "REJECTED"] }
+      status: { $in: ["CONFIRMED"] }
     })
       .populate("eventId")
       .sort({ booked_at: -1 });
