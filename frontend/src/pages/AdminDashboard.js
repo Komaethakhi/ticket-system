@@ -9,11 +9,14 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
-  const [coachIds, setCoachIds] = useState("");
+  const [coachRows, setCoachRows] = useState([
+    { coachId: "", mobileNumber: "" }
+  ]);
   const [addingCoachIds, setAddingCoachIds] = useState(false);
   const [coachIdMessage, setCoachIdMessage] = useState("");
   const [coachIdResult, setCoachIdResult] = useState(null);
-  const [verifyingOrderId, setVerifyingOrderId] = useState("");
+  const [contactDrafts, setContactDrafts] = useState({});
+  const [savingContactId, setSavingContactId] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async ({ showLoader = true } = {}) => {
@@ -24,6 +27,12 @@ function AdminDashboard() {
       }
       const res = await api.get("/admin/summary");
       setData(res.data);
+      setContactDrafts(
+        (res.data.coachContacts || []).reduce((drafts, coach) => ({
+          ...drafts,
+          [coach.id]: coach.mobileNumber || ""
+        }), {})
+      );
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load admin dashboard");
     } finally {
@@ -38,41 +47,6 @@ function AdminDashboard() {
   }, []);
 
   const canBookTickets = Boolean(sessionStorage.getItem("token"));
-  const removePendingOrder = (orderId) => {
-    setData((currentData) => {
-      if (!currentData) {
-        return currentData;
-      }
-
-      const pendingOrders = (currentData.pendingOrders || []).filter(
-        (order) => order.orderId !== orderId
-      );
-
-      return {
-        ...currentData,
-        pendingOrders,
-        totals: {
-          ...currentData.totals,
-          pendingVerifications: pendingOrders.length
-        }
-      };
-    });
-  };
-
-  const getApiErrorMessage = (err, fallback) => {
-    const responseMessage = err.response?.data?.message;
-
-    if (responseMessage) {
-      return responseMessage;
-    }
-
-    if (typeof err.response?.data === "string") {
-      return err.response.data;
-    }
-
-    return fallback;
-  };
-
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("userId");
@@ -109,22 +83,27 @@ function AdminDashboard() {
     setCoachIdResult(null);
     setError("");
 
+    const coachIds = coachRows
+      .map((row) => `${row.coachId.trim().toUpperCase()} ${row.mobileNumber.trim()}`.trim())
+      .filter(Boolean)
+      .join("\n");
+
     try {
       setAddingCoachIds(true);
       const res = await api.post("/admin/coach-ids", { coachIds });
-      const { added = [], skipped = [], invalid = [] } = res.data;
+      const { added = [], skipped = [], invalid = [], updated = [] } = res.data;
       setCoachIdMessage(
-        `Added ${added.length} ID(s). Skipped ${skipped.length} ID(s). Invalid ${invalid.length}.`
+        `Added ${added.length} ID(s). Updated ${updated.length}. Skipped ${skipped.length}. Invalid ${invalid.length}.`
       );
       setCoachIdResult(res.data);
-      setCoachIds("");
+      setCoachRows([{ coachId: "", mobileNumber: "" }]);
       await loadSummary();
     } catch (err) {
       if (err.response?.data) {
-        const { added = [], skipped = [], invalid = [] } = err.response.data;
+        const { added = [], skipped = [], invalid = [], updated = [] } = err.response.data;
         setCoachIdResult(err.response.data);
         setCoachIdMessage(
-          `Added ${added.length} ID(s). Skipped ${skipped.length} ID(s). Invalid ${invalid.length}.`
+          `Added ${added.length} ID(s). Updated ${updated.length}. Skipped ${skipped.length}. Invalid ${invalid.length}.`
         );
       }
       setError(err.response?.data?.message || "Failed to add coach IDs");
@@ -133,22 +112,77 @@ function AdminDashboard() {
     }
   };
 
-  const handleVerifyOrder = async (orderId, action) => {
-    try {
-      setVerifyingOrderId(orderId);
-      setError("");
-      await api.post(`/admin/orders/${orderId}/${action}`);
-      removePendingOrder(orderId);
-      await loadSummary({ showLoader: false });
-    } catch (err) {
-      if (err.response?.data?.code === "EVENT_OVER") {
-        removePendingOrder(orderId);
-        await loadSummary({ showLoader: false });
+  const handleCoachRowChange = (index, field, value) => {
+    setCoachRows((currentRows) =>
+      currentRows.map((row, rowIndex) => {
+        if (rowIndex !== index) {
+          return row;
+        }
+
+        return {
+          ...row,
+          [field]: field === "coachId"
+            ? value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)
+            : value.replace(/\D/g, "").slice(0, 15)
+        };
+      })
+    );
+  };
+
+  const handleAddCoachRow = () => {
+    setCoachRows((currentRows) => [
+      ...currentRows,
+      { coachId: "", mobileNumber: "" }
+    ]);
+  };
+
+  const handleRemoveCoachRow = (index) => {
+    setCoachRows((currentRows) => {
+      if (currentRows.length === 1) {
+        return [{ coachId: "", mobileNumber: "" }];
       }
 
-      setError(getApiErrorMessage(err, `Failed to ${action} payment`));
+      return currentRows.filter((_, rowIndex) => rowIndex !== index);
+    });
+  };
+
+  const handleContactChange = (coachId, value) => {
+    setContactDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      [coachId]: value.replace(/\D/g, "").slice(0, 15)
+    }));
+  };
+
+  const handleSaveContact = async (coach) => {
+    try {
+      setSavingContactId(coach.id);
+      setError("");
+      const res = await api.put(`/admin/coaches/${coach.id}/contact`, {
+        mobileNumber: contactDrafts[coach.id] || ""
+      });
+      setData((currentData) => {
+        if (!currentData) {
+          return currentData;
+        }
+
+        const coachContacts = (currentData.coachContacts || []).map((contact) =>
+          contact.id === coach.id ? res.data.coach : contact
+        );
+
+        return {
+          ...currentData,
+          coachContacts,
+          totals: {
+            ...currentData.totals,
+            coachContacts: coachContacts.filter((contact) => contact.mobileNumber).length,
+            missingCoachContacts: coachContacts.filter((contact) => !contact.mobileNumber).length
+          }
+        };
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update mobile number");
     } finally {
-      setVerifyingOrderId("");
+      setSavingContactId("");
     }
   };
 
@@ -171,8 +205,8 @@ function AdminDashboard() {
 
   const totals = data?.totals || {};
   const coachSummary = data?.coachSummary || [];
+  const coachContacts = data?.coachContacts || [];
   const orders = data?.orders || [];
-  const pendingOrders = data?.pendingOrders || [];
 
   return (
     <main className="admin-dashboard-page">
@@ -215,8 +249,8 @@ function AdminDashboard() {
               <strong>{totals.totalOrders || 0}</strong>
             </article>
             <article>
-              <span>Pending Review</span>
-              <strong>{totals.pendingVerifications || 0}</strong>
+              <span>Auto Confirmed</span>
+              <strong>{totals.totalOrders || 0}</strong>
             </article>
             <article>
               <span>Unique IDs</span>
@@ -226,13 +260,80 @@ function AdminDashboard() {
               <span>Registered IDs</span>
               <strong>{totals.registeredCoachIds || 0}</strong>
             </article>
+            <article>
+              <span>Contacts Saved</span>
+              <strong>{totals.coachContacts || 0}</strong>
+            </article>
           </section>
 
           <section className="admin-section">
             <div className="admin-section-title">
               <div>
-                <h2>Pending Payment Verification</h2>
-                <p>Verify the UPI transaction in the bank/UPI app before approving.</p>
+                <h2>Add Coach IDs & WhatsApp Numbers</h2>
+                <p>Enter each Herbalife ID with its WhatsApp mobile number.</p>
+              </div>
+            </div>
+            <form className="admin-coach-form" onSubmit={handleAddCoachIds}>
+              <div className="admin-coach-entry-table">
+                <div className="admin-coach-entry-header">
+                  <span>Herbalife ID</span>
+                  <span>WhatsApp Mobile Number</span>
+                  <span>Action</span>
+                </div>
+                {coachRows.map((row, index) => (
+                  <div className="admin-coach-entry-row" key={`coach-row-${index}`}>
+                    <input
+                      value={row.coachId}
+                      onChange={(e) => handleCoachRowChange(index, "coachId", e.target.value)}
+                      placeholder="W1C4642850"
+                    />
+                    <input
+                      value={row.mobileNumber}
+                      onChange={(e) => handleCoachRowChange(index, "mobileNumber", e.target.value)}
+                      placeholder="9876543210"
+                    />
+                    <button
+                      type="button"
+                      className="admin-row-remove-button"
+                      onClick={() => handleRemoveCoachRow(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="admin-coach-form-actions">
+                {coachIdMessage && <p>{coachIdMessage}</p>}
+                <div className="admin-coach-form-buttons">
+                  <button
+                    type="button"
+                    className="admin-add-row-button"
+                    onClick={handleAddCoachRow}
+                  >
+                    Add Row
+                  </button>
+                  <button disabled={addingCoachIds}>
+                    {addingCoachIds ? "Adding..." : "Add Coach Contacts"}
+                  </button>
+                </div>
+              </div>
+              {coachIdResult && (
+                <div className="admin-coach-result">
+                  {renderIdList("Added", coachIdResult.added)}
+                  {renderIdList("Mobile updated", coachIdResult.updated)}
+                  {renderIdList("Already exists", coachIdResult.existing)}
+                  {renderIdList("Duplicate in paste", coachIdResult.duplicate)}
+                  {renderIdList("Invalid", coachIdResult.invalid)}
+                </div>
+              )}
+            </form>
+          </section>
+
+          <section className="admin-section">
+            <div className="admin-section-title">
+              <div>
+                <h2>Coach Contacts & Greetings</h2>
+                <p>Save mobile numbers for registered IDs and send the greeting message on WhatsApp.</p>
               </div>
             </div>
             <div className="admin-table-wrap">
@@ -240,84 +341,54 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Herbalife ID</th>
-                    <th>Training</th>
-                    <th>Qty</th>
-                    <th>Amount</th>
-                    <th>Transaction ID</th>
-                    <th>WhatsApp</th>
-                    <th>Submitted At</th>
+                    <th>Mobile Number</th>
+                    <th>Greeting</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingOrders.map((order) => (
-                    <tr key={order.orderId}>
-                      <td>{order.coachId}</td>
-                      <td>{order.eventTitle}</td>
-                      <td>{order.quantity}</td>
-                      <td>Rs. {order.amount}</td>
-                      <td>{order.transactionId || "-"}</td>
-                      <td>{order.whatsappNumber || "-"}</td>
-                      <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
+                  {coachContacts.map((coach) => (
+                    <tr key={coach.id}>
+                      <td>{coach.coachId}</td>
                       <td>
-                        <div className="admin-row-actions">
-                          <button
-                            className="admin-approve-button"
-                            disabled={verifyingOrderId === order.orderId}
-                            onClick={() => handleVerifyOrder(order.orderId, "approve")}
+                        <input
+                          className="admin-contact-input"
+                          value={contactDrafts[coach.id] || ""}
+                          onChange={(e) => handleContactChange(coach.id, e.target.value)}
+                          placeholder="Enter mobile number"
+                        />
+                      </td>
+                      <td>
+                        {coach.greetingLink ? (
+                          <a
+                            href={coach.greetingLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="admin-whatsapp-link"
                           >
-                            Approve
-                          </button>
-                          <button
-                            className="admin-reject-button"
-                            disabled={verifyingOrderId === order.orderId}
-                            onClick={() => handleVerifyOrder(order.orderId, "reject")}
-                          >
-                            Reject
-                          </button>
-                        </div>
+                            Send Greeting
+                          </a>
+                        ) : "Add mobile number"}
+                      </td>
+                      <td>
+                        <button
+                          className="admin-save-button"
+                          disabled={savingContactId === coach.id}
+                          onClick={() => handleSaveContact(coach)}
+                        >
+                          {savingContactId === coach.id ? "Saving..." : "Save"}
+                        </button>
                       </td>
                     </tr>
                   ))}
-                  {pendingOrders.length === 0 && (
+                  {coachContacts.length === 0 && (
                     <tr>
-                      <td colSpan="8">No pending payments.</td>
+                      <td colSpan="4">No coach IDs registered yet.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
-          </section>
-
-          <section className="admin-section">
-            <div className="admin-section-title">
-              <div>
-                <h2>Add Coach IDs</h2>
-                <p>Paste 9 or 10 character IDs, one per line or separated with commas.</p>
-              </div>
-            </div>
-            <form className="admin-coach-form" onSubmit={handleAddCoachIds}>
-              <textarea
-                value={coachIds}
-                onChange={(e) => setCoachIds(e.target.value.toUpperCase())}
-                placeholder={"Enter Herbalife IDs\nExample:\nW1C4642850\nA1B2C3D4E5"}
-                rows="5"
-              />
-              <div className="admin-coach-form-actions">
-                {coachIdMessage && <p>{coachIdMessage}</p>}
-                <button disabled={addingCoachIds}>
-                  {addingCoachIds ? "Adding..." : "Add Coach IDs"}
-                </button>
-              </div>
-              {coachIdResult && (
-                <div className="admin-coach-result">
-                  {renderIdList("Added", coachIdResult.added)}
-                  {renderIdList("Already exists", coachIdResult.existing)}
-                  {renderIdList("Duplicate in paste", coachIdResult.duplicate)}
-                  {renderIdList("Invalid", coachIdResult.invalid)}
-                </div>
-              )}
-            </form>
           </section>
 
           <section className="admin-section">

@@ -102,7 +102,7 @@
   max-width: 1180px;
   margin: 0 auto 24px;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
 }
 
@@ -199,12 +199,32 @@
   gap: 14px;
 }
 
+.admin-coach-entry-table {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-coach-entry-header,
+.admin-coach-entry-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-coach-entry-header {
+  color: #5f665d;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-coach-entry-row input,
 .admin-coach-form textarea {
   width: 100%;
   box-sizing: border-box;
-  resize: vertical;
-  min-height: 130px;
-  padding: 14px 15px;
+  min-height: 42px;
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #dedfd8;
   outline: none;
@@ -214,6 +234,30 @@
   line-height: 1.5;
 }
 
+.admin-coach-form textarea {
+  resize: vertical;
+  min-height: 130px;
+  padding: 14px 15px;
+}
+
+.admin-contact-input {
+  width: min(220px, 100%);
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #dedfd8;
+  background: #fbfcfb;
+  color: #101828;
+  font: inherit;
+  outline: none;
+}
+
+.admin-contact-input:focus {
+  border-color: #c9a441;
+  box-shadow: 0 0 0 3px rgba(201, 164, 65, 0.16);
+}
+
+.admin-coach-entry-row input:focus,
 .admin-coach-form textarea:focus {
   border-color: #c9a441;
   box-shadow: 0 0 0 4px rgba(201, 164, 65, 0.18);
@@ -240,6 +284,29 @@
   border-radius: 8px;
   background: linear-gradient(135deg, #17351f, #2d5a43);
   color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-coach-form-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-coach-form-actions .admin-add-row-button {
+  background: #ffffff;
+  color: #17351f;
+  border: 1px solid #cfd8ca;
+}
+
+.admin-row-remove-button {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid #f2c7c2;
+  border-radius: 8px;
+  background: #fff3f2;
+  color: #b42318;
   cursor: pointer;
   font-weight: 800;
 }
@@ -290,8 +357,7 @@
   flex-wrap: wrap;
 }
 
-.admin-approve-button,
-.admin-reject-button {
+.admin-save-button {
   min-height: 36px;
   padding: 0 12px;
   border: none;
@@ -301,12 +367,8 @@
   font-weight: 800;
 }
 
-.admin-approve-button {
-  background: #2d5a43;
-}
-
-.admin-reject-button {
-  background: #b42318;
+.admin-save-button {
+  background: #17351f;
 }
 
 .admin-whatsapp-link {
@@ -322,8 +384,7 @@
   white-space: nowrap;
 }
 
-.admin-approve-button:disabled,
-.admin-reject-button:disabled {
+.admin-save-button:disabled {
   opacity: 0.7;
   cursor: wait;
 }
@@ -344,6 +405,18 @@
 
   .admin-coach-result {
     grid-template-columns: 1fr;
+  }
+
+  .admin-coach-entry-header {
+    display: none;
+  }
+
+  .admin-coach-entry-row {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    border: 1px solid #e3e6dc;
+    border-radius: 8px;
+    background: #fbfcfb;
   }
 
   .admin-metrics-grid {
