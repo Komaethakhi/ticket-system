@@ -1,0 +1,29 @@
+.details-back-button,
+.details-qty-button,
+.details-book-button {
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.details-back-button:hover {
+  background: #c9a441 !important;
+  border-color: #c9a441 !important;
+  color: #17351f !important;
+  transform: translateY(-1px);
+}
+
+.details-qty-button:hover {
+  background: linear-gradient(135deg, #c9a441, #f0c85a) !important;
+  color: #17351f !important;
+}
+
+.details-book-button:hover:not(:disabled) {
+  background: #c9a441 !important;
+  color: #17351f !important;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(201, 164, 65, 0.34) !important;
+}
+
+.details-book-button:disabled {
+  cursor: wait !important;
+  opacity: 0.72;
+}

@@ -1,0 +1,24 @@
+.event-card {
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.event-card:hover {
+  transform: translateY(-6px);
+  border-color: #c9a441 !important;
+  box-shadow: 0 30px 70px rgba(0, 99, 65, 0.18) !important;
+}
+
+.event-card:hover .event-button {
+  background: linear-gradient(135deg, #c9a441, #f0c85a) !important;
+  color: #17351f !important;
+  box-shadow: 0 18px 36px rgba(201, 164, 65, 0.32) !important;
+}
+
+.event-button {
+  transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.event-button:hover {
+  transform: translateY(-1px);
+}

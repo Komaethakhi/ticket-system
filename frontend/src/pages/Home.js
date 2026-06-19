@@ -4,13 +4,16 @@ import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+import "./Home.css";
 
 const getEventImage = (title) => {
-  if (String(title || "").toUpperCase() === "WELLNESS SEMINAR") {
-    return "/events/wellness-seminar.jpeg?v=2";
-  }
+  const eventImages = {
+    "WELLNESS SEMINAR": "/events/wellness-seminar.jpeg?v=2",
+    "ASSOCIATE ACADEMY": "/events/associate-academy.png?v=1",
+    "SUPERVISOR WORKSHOP": "/events/supervisor-workshop.png?v=1"
+  };
 
-  return "";
+  return eventImages[String(title || "").toUpperCase()] || "";
 };
 
 function Home() {
@@ -75,7 +78,7 @@ function Home() {
             const eventImage = getEventImage(t.title);
 
             return (
-              <article key={t._id} style={styles.card}>
+              <article key={t._id} className="event-card" style={styles.card}>
                 {eventImage && (
                   <img
                     src={eventImage}
@@ -105,7 +108,7 @@ function Home() {
                 </div>
 
                 <Link to={`/training/${t._id}`} style={styles.link}>
-                  <button style={styles.button}>
+                  <button className="event-button" style={styles.button}>
                     View Event
                   </button>
                 </Link>

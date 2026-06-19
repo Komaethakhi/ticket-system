@@ -4,13 +4,16 @@ import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+import "./EventDetails.css";
 
 const getEventImage = (title) => {
-  if (String(title || "").toUpperCase() === "WELLNESS SEMINAR") {
-    return "/events/wellness-seminar.jpeg?v=2";
-  }
+  const eventImages = {
+    "WELLNESS SEMINAR": "/events/wellness-seminar.jpeg?v=2",
+    "ASSOCIATE ACADEMY": "/events/associate-academy.png?v=1",
+    "SUPERVISOR WORKSHOP": "/events/supervisor-workshop.png?v=1"
+  };
 
-  return "";
+  return eventImages[String(title || "").toUpperCase()] || "";
 };
 
 function TrainingDetails() {
@@ -155,7 +158,7 @@ function TrainingDetails() {
       <Navbar />
       <main style={{ ...styles.page, ...(isMobile ? styles.pageMobile : {}) }}>
         <div style={styles.shell}>
-          <button style={styles.backButton} onClick={() => navigate("/")}>
+          <button className="details-back-button" style={styles.backButton} onClick={() => navigate("/")}>
             Back
           </button>
 
@@ -222,9 +225,9 @@ function TrainingDetails() {
               <div style={{ ...styles.quantityHeader, ...(isMobile ? styles.quantityHeaderMobile : {}) }}>
                 <span style={styles.quantityLabel}>Tickets</span>
                 <div style={styles.qtyBox}>
-                  <button onClick={decreaseQty} style={styles.qtyBtn}>-</button>
+                  <button className="details-qty-button" onClick={decreaseQty} style={styles.qtyBtn}>-</button>
                   <span style={styles.qty}>{quantity}</span>
-                  <button onClick={increaseQty} style={styles.qtyBtn}>+</button>
+                  <button className="details-qty-button" onClick={increaseQty} style={styles.qtyBtn}>+</button>
                 </div>
               </div>
 
@@ -233,7 +236,7 @@ function TrainingDetails() {
                 <strong>Rs. {training.ticket_price * quantity}</strong>
               </div>
 
-              <button disabled={paying} style={styles.bookBtn} onClick={handleBook}>
+              <button className="details-book-button" disabled={paying} style={styles.bookBtn} onClick={handleBook}>
                 {paying ? "Preparing QR..." : "Show Payment QR"}
               </button>
             </aside>
@@ -284,7 +287,7 @@ function TrainingDetails() {
                   style={styles.transactionInput}
                 />
                 {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
-                <button disabled={paying} style={styles.bookBtn}>
+                <button className="details-book-button" disabled={paying} style={styles.bookBtn}>
                   {paying ? "Confirming..." : "Payment Done - Confirm Order"}
                 </button>
               </form>
