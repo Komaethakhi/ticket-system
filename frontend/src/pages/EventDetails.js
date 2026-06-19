@@ -8,7 +8,7 @@ import "./EventDetails.css";
 
 const getEventImage = (title) => {
   const eventImages = {
-    "WELLNESS SEMINAR": "/events/wellness-seminar.jpeg?v=2",
+    "WELLNESS SEMINAR": "/events/wellness-seminar.png?v=1",
     "ASSOCIATE ACADEMY": "/events/associate-academy.png?v=1",
     "SUPERVISOR WORKSHOP": "/events/supervisor-workshop.png?v=1"
   };
