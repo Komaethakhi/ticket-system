@@ -8,21 +8,21 @@ const defaultEvents = [
     description: "HEALTH WEALTH AND REAL HAPPINESS",
     ticket_price: 500,
     location: "RAJAPALAYAM AND TIRUNELVELI",
-    date: "20 JUNE 2026"
+    date: "19 JULY 2026"
   },
   {
     title: "ASSOCIATE ACADEMY",
     description: "RECOGNITIONS, SUCCESS STORY",
     ticket_price: 600,
     location: "A. K. AYYANAR NADAR MAHAL, RAJAPALAYAM",
-    date: "5 JUNE 2026"
+    date: "3 JULY 2026"
   },
   {
     title: "SUPERVISOR WORKSHOP",
     description: "LET'S GROOM AND DEVELOP",
     ticket_price: 800,
     location: "SANKARANKOVIL",
-    date: "8 JUNE 2026"
+    date: "4 JULY 2026"
   }
 ];
 
