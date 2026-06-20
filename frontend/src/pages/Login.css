@@ -37,9 +37,9 @@
 .login-brand-image {
   position: absolute;
   left: 50%;
-  top: 47%;
-  width: min(92%, 430px);
-  max-height: 55%;
+  top: 30%;
+  width: min(80%, 380px);
+  max-height: 28%;
   object-fit: contain;
   transform: translate(-50%, -50%);
   opacity: 0.98;
@@ -76,7 +76,7 @@
   position: relative;
   z-index: 1;
   max-width: 430px;
-  margin: -22px 0 0;
+  margin: 4px 0 0;
   font-size: 40px;
   line-height: 1.08;
   letter-spacing: 0;
