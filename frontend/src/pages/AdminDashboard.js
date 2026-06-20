@@ -10,12 +10,13 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [coachRows, setCoachRows] = useState([
-    { coachId: "", mobileNumber: "" }
+    { coachId: "", coachName: "", mobileNumber: "" }
   ]);
   const [addingCoachIds, setAddingCoachIds] = useState(false);
   const [coachIdMessage, setCoachIdMessage] = useState("");
   const [coachIdResult, setCoachIdResult] = useState(null);
   const [contactDrafts, setContactDrafts] = useState({});
+  const [nameDrafts, setNameDrafts] = useState({});
   const [savingContactId, setSavingContactId] = useState("");
   const navigate = useNavigate();
 
@@ -31,6 +32,12 @@ function AdminDashboard() {
         (res.data.coachContacts || []).reduce((drafts, coach) => ({
           ...drafts,
           [coach.id]: coach.mobileNumber || ""
+        }), {})
+      );
+      setNameDrafts(
+        (res.data.coachContacts || []).reduce((drafts, coach) => ({
+          ...drafts,
+          [coach.id]: coach.coachName || ""
         }), {})
       );
     } catch (err) {
@@ -84,9 +91,12 @@ function AdminDashboard() {
     setError("");
 
     const coachIds = coachRows
-      .map((row) => `${row.coachId.trim().toUpperCase()} ${row.mobileNumber.trim()}`.trim())
-      .filter(Boolean)
-      .join("\n");
+      .map((row) => ({
+        coachId: row.coachId.trim().toUpperCase(),
+        coachName: row.coachName.trim(),
+        mobileNumber: row.mobileNumber.trim()
+      }))
+      .filter((row) => row.coachId || row.coachName || row.mobileNumber);
 
     try {
       setAddingCoachIds(true);
@@ -96,7 +106,7 @@ function AdminDashboard() {
         `Added ${added.length} ID(s). Updated ${updated.length}. Skipped ${skipped.length}. Invalid ${invalid.length}.`
       );
       setCoachIdResult(res.data);
-      setCoachRows([{ coachId: "", mobileNumber: "" }]);
+      setCoachRows([{ coachId: "", coachName: "", mobileNumber: "" }]);
       await loadSummary();
     } catch (err) {
       if (err.response?.data) {
@@ -119,11 +129,15 @@ function AdminDashboard() {
           return row;
         }
 
+        const nextValueByField = {
+          coachId: value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10),
+          coachName: value.replace(/[^\w\s.'-]/g, "").slice(0, 60),
+          mobileNumber: value.replace(/\D/g, "").slice(0, 10)
+        };
+
         return {
           ...row,
-          [field]: field === "coachId"
-            ? value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)
-            : value.replace(/\D/g, "").slice(0, 10)
+          [field]: nextValueByField[field] ?? value
         };
       })
     );
@@ -132,14 +146,14 @@ function AdminDashboard() {
   const handleAddCoachRow = () => {
     setCoachRows((currentRows) => [
       ...currentRows,
-      { coachId: "", mobileNumber: "" }
+      { coachId: "", coachName: "", mobileNumber: "" }
     ]);
   };
 
   const handleRemoveCoachRow = (index) => {
     setCoachRows((currentRows) => {
       if (currentRows.length === 1) {
-        return [{ coachId: "", mobileNumber: "" }];
+        return [{ coachId: "", coachName: "", mobileNumber: "" }];
       }
 
       return currentRows.filter((_, rowIndex) => rowIndex !== index);
@@ -153,11 +167,19 @@ function AdminDashboard() {
     }));
   };
 
+  const handleNameChange = (coachId, value) => {
+    setNameDrafts((currentDrafts) => ({
+      ...currentDrafts,
+      [coachId]: value.replace(/[^\w\s.'-]/g, "").slice(0, 60)
+    }));
+  };
+
   const handleSaveContact = async (coach) => {
     try {
       setSavingContactId(coach.id);
       setError("");
       const res = await api.put(`/admin/coaches/${coach.id}/contact`, {
+        coachName: nameDrafts[coach.id] || "",
         mobileNumber: contactDrafts[coach.id] || ""
       });
       setData((currentData) => {
@@ -277,6 +299,7 @@ function AdminDashboard() {
               <div className="admin-coach-entry-table">
                 <div className="admin-coach-entry-header">
                   <span>Herbalife ID</span>
+                  <span>Coach Name</span>
                   <span>WhatsApp Mobile Number</span>
                   <span>Action</span>
                 </div>
@@ -286,6 +309,11 @@ function AdminDashboard() {
                       value={row.coachId}
                       onChange={(e) => handleCoachRowChange(index, "coachId", e.target.value)}
                       placeholder="W1C4642850"
+                    />
+                    <input
+                      value={row.coachName}
+                      onChange={(e) => handleCoachRowChange(index, "coachName", e.target.value)}
+                      placeholder="Coach name"
                     />
                     <input
                       value={row.mobileNumber}
@@ -341,6 +369,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Herbalife ID</th>
+                    <th>Coach Name</th>
                     <th>Mobile Number</th>
                     <th>Greeting</th>
                     <th>Action</th>
@@ -350,6 +379,14 @@ function AdminDashboard() {
                   {coachContacts.map((coach) => (
                     <tr key={coach.id}>
                       <td>{coach.coachId}</td>
+                      <td>
+                        <input
+                          className="admin-contact-input"
+                          value={nameDrafts[coach.id] || ""}
+                          onChange={(e) => handleNameChange(coach.id, e.target.value)}
+                          placeholder="Enter coach name"
+                        />
+                      </td>
                       <td>
                         <input
                           className="admin-contact-input"
@@ -383,7 +420,7 @@ function AdminDashboard() {
                   ))}
                   {coachContacts.length === 0 && (
                     <tr>
-                      <td colSpan="4">No coach IDs registered yet.</td>
+                      <td colSpan="5">No coach IDs registered yet.</td>
                     </tr>
                   )}
                 </tbody>

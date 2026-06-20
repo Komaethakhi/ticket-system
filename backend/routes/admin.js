@@ -55,9 +55,11 @@ const isValidMobileNumber = (number) => {
   return number.length === 10;
 };
 
+const normalizeCoachName = (name) => String(name || "").trim();
+
 const buildCoachGreetingMessage = (coach) =>
   [
-    `Vanakkam ${coach.coachId},`,
+    `Vanakkam ${coach.coachName || coach.coachId},`,
     "Welcome to Herbalife Training Portal.",
     "Your Herbalife ID is active for event ticket booking.",
     "Please login, choose your event, and complete payment to confirm your ticket."
@@ -78,6 +80,7 @@ const buildCoachGreetingLink = (coach) => {
 const formatCoachContact = (coach) => ({
   id: coach._id,
   coachId: coach.coachId,
+  coachName: coach.coachName || "",
   mobileNumber: coach.mobileNumber || "",
   greetingLink: buildCoachGreetingLink(coach),
   createdAt: coach.createdAt,
@@ -85,12 +88,26 @@ const formatCoachContact = (coach) => ({
 });
 
 const parseCoachContactEntry = (entry) => {
+  if (entry && typeof entry === "object") {
+    const coachId = String(entry.coachId || "").trim().toUpperCase();
+    const coachName = normalizeCoachName(entry.coachName);
+    const mobileNumber = normalizeMobileNumber(entry.mobileNumber);
+
+    return {
+      coachId,
+      coachName,
+      mobileNumber,
+      raw: [coachId, coachName, mobileNumber].filter(Boolean).join(" ")
+    };
+  }
+
   const text = String(entry || "").trim().toUpperCase();
   const coachMatch = text.match(/(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,10}/);
 
   if (!coachMatch) {
     return {
       coachId: "",
+      coachName: "",
       mobileNumber: "",
       raw: text
     };
@@ -101,6 +118,7 @@ const parseCoachContactEntry = (entry) => {
 
   return {
     coachId,
+    coachName: "",
     mobileNumber,
     raw: text
   };
@@ -176,7 +194,7 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
   try {
     const [orders, coaches] = await Promise.all([
       getConfirmedOrders(),
-      User.find().select("coachId mobileNumber createdAt updatedAt").sort({ coachId: 1 })
+      User.find().select("coachId coachName mobileNumber createdAt updatedAt").sort({ coachId: 1 })
     ]);
     const rows = orders.map(formatOrder);
 
@@ -280,11 +298,15 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
     const mobileByCoachId = new Map(
       validEntries.map((entry) => [entry.coachId, entry.mobileNumber])
     );
+    const nameByCoachId = new Map(
+      validEntries.map((entry) => [entry.coachId, entry.coachName])
+    );
 
     if (newCoachIds.length > 0) {
       await User.insertMany(
         newCoachIds.map((coachId) => ({
           coachId,
+          coachName: nameByCoachId.get(coachId),
           mobileNumber: mobileByCoachId.get(coachId)
         }))
       );
@@ -298,7 +320,7 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
       await Promise.all(updateEntries.map((entry) =>
         User.updateOne(
           { coachId: entry.coachId },
-          { $set: { mobileNumber: entry.mobileNumber } }
+          { $set: { mobileNumber: entry.mobileNumber, coachName: entry.coachName } }
         )
       ));
     }
@@ -321,6 +343,7 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
 router.put("/coaches/:id/contact", adminAuthMiddleware, async (req, res) => {
   try {
     const mobileNumber = normalizeMobileNumber(req.body.mobileNumber);
+    const coachName = normalizeCoachName(req.body.coachName);
 
     if (!isValidMobileNumber(mobileNumber)) {
       return res.status(400).json({ message: "Enter a valid mobile number" });
@@ -328,9 +351,9 @@ router.put("/coaches/:id/contact", adminAuthMiddleware, async (req, res) => {
 
     const coach = await User.findByIdAndUpdate(
       req.params.id,
-      { $set: { mobileNumber } },
+      { $set: { mobileNumber, coachName } },
       { new: true, runValidators: true }
-    ).select("coachId mobileNumber createdAt updatedAt");
+    ).select("coachId coachName mobileNumber createdAt updatedAt");
 
     if (!coach) {
       return res.status(404).json({ message: "Coach ID not found" });

@@ -11,6 +11,10 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       uppercase: true
     },
+    coachName: {
+      type: String,
+      trim: true
+    },
     mobileNumber: {
       type: String,
       trim: true
