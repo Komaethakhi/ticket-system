@@ -30,13 +30,25 @@
   flex-direction: column;
   justify-content: space-between;
   color: #06275f;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(232, 245, 255, 0.48)),
-    url("../assets/mi27-organization.jpeg") center/contain no-repeat,
-    #ffffff;
+  isolation: isolate;
+  background: linear-gradient(145deg, #ffffff 0%, #eef8ff 100%);
+}
+
+.login-brand-image {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: min(92%, 430px);
+  max-height: 55%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  opacity: 0.98;
+  z-index: -1;
 }
 
 .login-brand-mark {
+  position: relative;
+  z-index: 1;
   width: 54px;
   height: 54px;
   border-radius: 18px;
@@ -50,6 +62,8 @@
 }
 
 .login-kicker {
+  position: relative;
+  z-index: 1;
   margin: 70px 0 14px;
   font-size: 13px;
   font-weight: 700;
@@ -59,6 +73,8 @@
 }
 
 .login-heading {
+  position: relative;
+  z-index: 1;
   max-width: 430px;
   margin: 0;
   font-size: 40px;
@@ -67,6 +83,8 @@
 }
 
 .login-stats-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
