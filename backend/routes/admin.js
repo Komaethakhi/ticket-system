@@ -86,7 +86,7 @@ const formatCoachContact = (coach) => ({
 
 const parseCoachContactEntry = (entry) => {
   const text = String(entry || "").trim().toUpperCase();
-  const coachMatch = text.match(/(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}/);
+  const coachMatch = text.match(/(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,10}/);
 
   if (!coachMatch) {
     return {
@@ -245,7 +245,7 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
     });
 
     const invalidCoachIds = uniqueEntries.filter(
-      (entry) => !/^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}$/.test(entry.coachId)
+      (entry) => !/^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,10}$/.test(entry.coachId)
     ).map((entry) => entry.raw);
     const invalidMobileNumbers = uniqueEntries.filter(
       (entry) => entry.coachId && !entry.mobileNumber
@@ -254,13 +254,13 @@ router.post("/coach-ids", adminAuthMiddleware, async (req, res) => {
       (entry) => entry.coachId && entry.mobileNumber && !isValidMobileNumber(entry.mobileNumber)
     ).map((entry) => `${entry.coachId}: ${entry.mobileNumber}`);
     const validEntries = uniqueEntries.filter(
-      (entry) => /^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{9,10}$/.test(entry.coachId) && entry.mobileNumber && isValidMobileNumber(entry.mobileNumber)
+      (entry) => /^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,10}$/.test(entry.coachId) && entry.mobileNumber && isValidMobileNumber(entry.mobileNumber)
     );
     const validCoachIds = validEntries.map((entry) => entry.coachId);
 
     if (validCoachIds.length === 0) {
       return res.status(400).json({
-        message: "Enter at least one valid 9 or 10 character Herbalife ID",
+        message: "Enter at least one valid 8 to 10 character Herbalife ID",
         added: [],
         skipped: duplicateCoachIds,
         duplicate: duplicateCoachIds,
