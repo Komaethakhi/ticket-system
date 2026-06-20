@@ -63,9 +63,9 @@ function Login() {
     <div className="login-page">
       <main className="login-shell">
         <section className="login-brand-panel">
-          <div className="login-brand-mark">H</div>
+          <div className="login-brand-mark">MI</div>
           <p className="login-kicker">Herbalife Training Desk</p>
-          <h1 className="login-heading">Tickets, bookings, and passes in one calm place.</h1>
+          <h1 className="login-heading">TICKETS, BOOKINGS, AND PASSES IN ONE CALM PLACE.</h1>
           <div className="login-stats-grid">
             <div className="login-stat">
               <span className="login-stat-value">24/7</span>
