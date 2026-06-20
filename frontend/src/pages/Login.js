@@ -64,11 +64,11 @@ function Login() {
     <div className="login-page">
       <main className="login-shell">
         <section className="login-brand-panel">
-          <img className="login-brand-image" src={mi27Logo} alt="" aria-hidden="true" />
           <div className="login-brand-row">
             <div className="login-brand-mark">MI</div>
             <p className="login-kicker">Herbalife Training Desk</p>
           </div>
+          <img className="login-brand-image" src={mi27Logo} alt="" aria-hidden="true" />
           <h1 className="login-heading">TICKETS, BOOKINGS, AND PASSES IN ONE CALM PLACE.</h1>
           <div className="login-stats-grid">
             <div className="login-stat">

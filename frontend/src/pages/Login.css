@@ -28,22 +28,21 @@
   padding: 48px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 22px;
   color: #06275f;
   isolation: isolate;
   background: linear-gradient(145deg, #ffffff 0%, #eef8ff 100%);
 }
 
 .login-brand-image {
-  position: absolute;
-  left: 50%;
-  top: 38%;
-  width: min(88%, 420px);
-  max-height: 42%;
-  object-fit: contain;
-  transform: translate(-50%, -50%);
-  opacity: 0.22;
+  position: relative;
   z-index: 0;
+  align-self: center;
+  width: min(88%, 420px);
+  max-height: 160px;
+  object-fit: contain;
+  opacity: 0.42;
 }
 
 .login-brand-row {
@@ -88,7 +87,7 @@
   position: relative;
   z-index: 1;
   max-width: 430px;
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 40px;
   line-height: 1.08;
   letter-spacing: 0;
@@ -100,7 +99,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  margin-top: 34px;
+  margin-top: auto;
+  padding-top: 12px;
 }
 
 .login-stat {
@@ -266,6 +266,7 @@
   .login-brand-panel {
     min-height: 260px;
     padding: 28px;
+    gap: 20px;
   }
 
   .login-brand-row {
