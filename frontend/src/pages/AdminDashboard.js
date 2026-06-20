@@ -123,7 +123,7 @@ function AdminDashboard() {
           ...row,
           [field]: field === "coachId"
             ? value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)
-            : value.replace(/\D/g, "").slice(0, 15)
+            : value.replace(/\D/g, "").slice(0, 10)
         };
       })
     );
@@ -149,7 +149,7 @@ function AdminDashboard() {
   const handleContactChange = (coachId, value) => {
     setContactDrafts((currentDrafts) => ({
       ...currentDrafts,
-      [coachId]: value.replace(/\D/g, "").slice(0, 15)
+      [coachId]: value.replace(/\D/g, "").slice(0, 10)
     }));
   };
 

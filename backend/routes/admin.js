@@ -52,7 +52,7 @@ const isValidMobileNumber = (number) => {
     return true;
   }
 
-  return number.length >= 10 && number.length <= 15;
+  return number.length === 10;
 };
 
 const buildCoachGreetingMessage = (coach) =>
