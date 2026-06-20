@@ -37,7 +37,7 @@
 .login-brand-image {
   position: absolute;
   left: 50%;
-  top: 34%;
+  top: 38%;
   width: min(88%, 420px);
   max-height: 42%;
   object-fit: contain;
@@ -46,9 +46,17 @@
   z-index: 0;
 }
 
-.login-brand-mark {
+.login-brand-row {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.login-brand-mark {
+  flex: 0 0 auto;
   width: 54px;
   height: 54px;
   border-radius: 18px;
@@ -62,10 +70,9 @@
 }
 
 .login-kicker {
-  position: relative;
-  z-index: 1;
+  flex: 0 1 auto;
   width: fit-content;
-  margin: -48px 0 132px 74px;
+  margin: 0;
   padding: 8px 12px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
@@ -261,8 +268,13 @@
     padding: 28px;
   }
 
+  .login-brand-row {
+    gap: 12px;
+  }
+
   .login-kicker {
-    margin: -46px 0 92px 70px;
+    font-size: 12px;
+    padding: 7px 10px;
   }
 
   .login-heading {
