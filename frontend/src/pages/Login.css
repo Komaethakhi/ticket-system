@@ -65,7 +65,7 @@
   position: relative;
   z-index: 1;
   width: fit-content;
-  margin: 70px 0 14px;
+  margin: -48px 0 132px 74px;
   padding: 8px 12px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
@@ -262,7 +262,7 @@
   }
 
   .login-kicker {
-    margin-top: 42px;
+    margin: -46px 0 92px 70px;
   }
 
   .login-heading {
