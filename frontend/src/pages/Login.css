@@ -37,7 +37,7 @@
 .login-brand-image {
   position: absolute;
   left: 50%;
-  top: 42%;
+  top: 34%;
   width: min(88%, 420px);
   max-height: 42%;
   object-fit: contain;
