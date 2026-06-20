@@ -37,13 +37,13 @@
 .login-brand-image {
   position: absolute;
   left: 50%;
-  top: 30%;
-  width: min(80%, 380px);
-  max-height: 28%;
+  top: 42%;
+  width: min(88%, 420px);
+  max-height: 42%;
   object-fit: contain;
   transform: translate(-50%, -50%);
-  opacity: 0.98;
-  z-index: -1;
+  opacity: 0.22;
+  z-index: 0;
 }
 
 .login-brand-mark {
@@ -64,12 +64,17 @@
 .login-kicker {
   position: relative;
   z-index: 1;
+  width: fit-content;
   margin: 70px 0 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(6, 39, 95, 0.1);
+  color: #0b2e6f;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.78;
 }
 
 .login-heading {
