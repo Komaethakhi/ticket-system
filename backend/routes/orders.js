@@ -15,6 +15,7 @@ const { authMiddleware } = require("../middleware/auth");
 const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "9842426546@axisbank";
 const PAYMENT_UPI_NUMBER = process.env.PAYMENT_UPI_NUMBER || "9842426546";
 const PAYMENT_PAYEE_NAME = process.env.PAYMENT_PAYEE_NAME || "ANANTH";
+const OPEN_EVENT_TITLE = "WELLNESS SEMINAR";
 
 const buildUpiLink = ({ amount, orderId }) => {
   const params = new URLSearchParams({
@@ -40,6 +41,12 @@ router.post("/create", authMiddleware, async (req, res) => {
     const event = await Event.findById(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (String(event.title || "").toUpperCase() !== OPEN_EVENT_TITLE) {
+      return res.status(403).json({
+        message: "Ticket booking is currently open only for Wellness Seminar."
+      });
     }
 
     const user = await User.findById(req.user.userId);

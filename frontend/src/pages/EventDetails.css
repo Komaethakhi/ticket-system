@@ -24,6 +24,6 @@
 }
 
 .details-book-button:disabled {
-  cursor: wait !important;
+  cursor: not-allowed !important;
   opacity: 0.72;
 }

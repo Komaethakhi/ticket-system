@@ -31,6 +31,17 @@ const legacyEventTitles = [
   "Advanced Business Training"
 ];
 
+const OPEN_EVENT_TITLE = "WELLNESS SEMINAR";
+
+const addBookingStatus = (event) => {
+  const eventData = event.toObject ? event.toObject() : event;
+
+  return {
+    ...eventData,
+    bookingOpen: String(eventData.title || "").toUpperCase() === OPEN_EVENT_TITLE
+  };
+};
+
 const syncDefaultEvents = async () => {
   const count = await Event.countDocuments();
 
@@ -67,7 +78,7 @@ router.get("/", async (req, res) => {
     const events = await Event.find({
       title: { $in: defaultEvents.map((event) => event.title) }
     }).sort({ createdAt: 1 });
-    res.json(events);
+    res.json(events.map(addBookingStatus));
   } catch (err) {
     console.error("Get events error:", err);
     res.status(500).json({ message: "Failed to load events" });
@@ -82,7 +93,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    res.json(event);
+    res.json(addBookingStatus(event));
   } catch (err) {
     console.error("Get event error:", err);
     res.status(500).json({ message: "Failed to load event" });

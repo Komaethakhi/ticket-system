@@ -54,6 +54,10 @@ function TrainingDetails() {
   }, [id]);
 
   const increaseQty = () => {
+    if (!training?.bookingOpen) {
+      return;
+    }
+
     if (quantity < 100) {
       setQuantity(quantity + 1);
       setPaymentOrder(null);
@@ -62,6 +66,10 @@ function TrainingDetails() {
   };
 
   const decreaseQty = () => {
+    if (!training?.bookingOpen) {
+      return;
+    }
+
     if (quantity > 1) {
       setQuantity(quantity - 1);
       setPaymentOrder(null);
@@ -71,6 +79,11 @@ function TrainingDetails() {
 
   const handleBook = async () => {
     try {
+      if (!training?.bookingOpen) {
+        setPaymentMessage("Ticket booking is currently open only for Wellness Seminar.");
+        return;
+      }
+
       const coachId = sessionStorage.getItem("coachId");
 
       if (!coachId) {
@@ -147,6 +160,7 @@ function TrainingDetails() {
   }
 
   const eventImage = getEventImage(training.title);
+  const isBookingOpen = Boolean(training.bookingOpen);
 
   return (
     <>
@@ -205,7 +219,7 @@ function TrainingDetails() {
               </div>
               <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Booking status</span>
-                <strong>Auto confirmed after payment</strong>
+                <strong>{isBookingOpen ? "Open for booking" : "View only - booking closed"}</strong>
               </div>
             </div>
 
@@ -220,9 +234,9 @@ function TrainingDetails() {
               <div style={{ ...styles.quantityHeader, ...(isMobile ? styles.quantityHeaderMobile : {}) }}>
                 <span style={styles.quantityLabel}>Tickets</span>
                 <div style={styles.qtyBox}>
-                  <button className="details-qty-button" onClick={decreaseQty} style={styles.qtyBtn}>-</button>
+                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={decreaseQty} style={styles.qtyBtn}>-</button>
                   <span style={styles.qty}>{quantity}</span>
-                  <button className="details-qty-button" onClick={increaseQty} style={styles.qtyBtn}>+</button>
+                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={increaseQty} style={styles.qtyBtn}>+</button>
                 </div>
               </div>
 
@@ -231,9 +245,20 @@ function TrainingDetails() {
                 <strong>Rs. {training.ticket_price * quantity}</strong>
               </div>
 
-              <button className="details-book-button" disabled={paying} style={styles.bookBtn} onClick={handleBook}>
-                {paying ? "Preparing QR..." : "Show Payment QR"}
+              <button
+                className="details-book-button"
+                disabled={paying || !isBookingOpen}
+                style={{
+                  ...styles.bookBtn,
+                  ...(!isBookingOpen ? styles.bookBtnDisabled : {})
+                }}
+                onClick={handleBook}
+              >
+                {isBookingOpen ? (paying ? "Preparing QR..." : "Show Payment QR") : "Booking Closed"}
               </button>
+              {!isBookingOpen && (
+                <p style={styles.closedMessage}>Tickets are open only for Wellness Seminar right now.</p>
+              )}
             </aside>
           </section>
 
@@ -528,6 +553,17 @@ const styles = {
     fontSize: 16,
     fontWeight: "800",
     boxShadow: "0 16px 32px rgba(0, 99, 65, 0.24)"
+  },
+  bookBtnDisabled: {
+    background: "#98A2B3",
+    boxShadow: "none",
+    cursor: "not-allowed"
+  },
+  closedMessage: {
+    margin: "12px 0 0",
+    color: "#667085",
+    fontSize: "14px",
+    fontWeight: "700"
   },
   paymentPanel: {
     display: "grid",
