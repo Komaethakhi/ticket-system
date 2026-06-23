@@ -241,6 +241,7 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
       },
       coachSummary,
       coachContacts: coaches.map(formatCoachContact),
+      pendingPaymentOrders: pendingPaymentRows,
       orders: rows
     });
   } catch (err) {
