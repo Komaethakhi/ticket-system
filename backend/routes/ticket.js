@@ -5,7 +5,6 @@ const Ticket = require("../models/Ticket");
 const User = require("../models/User");
 const Event = require("../models/Event");
 
-const OPEN_EVENT_TITLE = "WELLNESS SEMINAR";
 
 router.post("/book", async (req, res) => {
   try {
@@ -21,11 +20,6 @@ router.post("/book", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (String(event.title || "").toUpperCase() !== OPEN_EVENT_TITLE) {
-      return res.status(403).json({
-        message: "Ticket booking is currently open only for Wellness Seminar."
-      });
-    }
 
     const ticket = await Ticket.create({
       coachId,

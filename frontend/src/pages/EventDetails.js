@@ -56,9 +56,6 @@ function TrainingDetails() {
   }, [id]);
 
   const increaseQty = () => {
-    if (!training?.bookingOpen) {
-      return;
-    }
 
     if (quantity < 100) {
       setQuantity(quantity + 1);
@@ -68,9 +65,6 @@ function TrainingDetails() {
   };
 
   const decreaseQty = () => {
-    if (!training?.bookingOpen) {
-      return;
-    }
 
     if (quantity > 1) {
       setQuantity(quantity - 1);
@@ -81,10 +75,6 @@ function TrainingDetails() {
 
   const handleBook = async () => {
     try {
-      if (!training?.bookingOpen) {
-        setPaymentMessage("Ticket booking is currently open only for Wellness Seminar.");
-        return;
-      }
 
       const coachId = sessionStorage.getItem("coachId");
 
@@ -198,7 +188,7 @@ function TrainingDetails() {
   }
 
   const eventImage = getEventImage(training.title);
-  const isBookingOpen = Boolean(training.bookingOpen);
+  const isBookingOpen = true;
 
   return (
     <>
@@ -257,7 +247,7 @@ function TrainingDetails() {
               </div>
               <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Booking status</span>
-                <strong>{isBookingOpen ? "Open for booking" : "View only - booking closed"}</strong>
+                <strong>Open for booking</strong>
               </div>
             </div>
 
@@ -272,9 +262,9 @@ function TrainingDetails() {
               <div style={{ ...styles.quantityHeader, ...(isMobile ? styles.quantityHeaderMobile : {}) }}>
                 <span style={styles.quantityLabel}>Tickets</span>
                 <div style={styles.qtyBox}>
-                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={decreaseQty} style={styles.qtyBtn}>-</button>
+                  <button className="details-qty-button" disabled={false} onClick={decreaseQty} style={styles.qtyBtn}>-</button>
                   <span style={styles.qty}>{quantity}</span>
-                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={increaseQty} style={styles.qtyBtn}>+</button>
+                  <button className="details-qty-button" disabled={false} onClick={increaseQty} style={styles.qtyBtn}>+</button>
                 </div>
               </div>
 
@@ -285,18 +275,15 @@ function TrainingDetails() {
 
               <button
                 className="details-book-button"
-                disabled={paying || !isBookingOpen}
+                disabled={paying}
                 style={{
                   ...styles.bookBtn,
                   ...(!isBookingOpen ? styles.bookBtnDisabled : {})
                 }}
                 onClick={handleBook}
               >
-                {isBookingOpen ? (paying ? "Preparing QR..." : "Show Payment QR") : "Booking Closed"}
+                {paying ? "Preparing QR..." : "Show Payment QR"}
               </button>
-              {!isBookingOpen && (
-                <p style={styles.closedMessage}>Tickets are open only for Wellness Seminar right now.</p>
-              )}
             </aside>
           </section>
 

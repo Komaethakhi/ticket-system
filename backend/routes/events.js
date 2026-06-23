@@ -31,14 +31,13 @@ const legacyEventTitles = [
   "Advanced Business Training"
 ];
 
-const OPEN_EVENT_TITLE = "WELLNESS SEMINAR";
 
 const addBookingStatus = (event) => {
   const eventData = event.toObject ? event.toObject() : event;
 
   return {
     ...eventData,
-    bookingOpen: String(eventData.title || "").toUpperCase() === OPEN_EVENT_TITLE
+    bookingOpen: true
   };
 };
 

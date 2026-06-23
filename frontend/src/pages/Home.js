@@ -76,7 +76,7 @@ function Home() {
         <div style={{ ...styles.grid, ...(isMobile ? styles.gridMobile : {}) }}>
           {trainings.map((t) => {
             const eventImage = getEventImage(t.title);
-            const isBookingOpen = Boolean(t.bookingOpen);
+            const isBookingOpen = true;
 
             return (
               <article key={t._id} className="event-card" style={styles.card}>
@@ -89,7 +89,7 @@ function Home() {
                 )}
                 <div style={styles.cardTop}>
                   <span style={isBookingOpen ? styles.cardBadge : styles.cardBadgeClosed}>
-                    {isBookingOpen ? "Open" : "View only"}
+                    Open
                   </span>
                   <strong style={styles.price}>Rs. {t.ticket_price}</strong>
                 </div>
