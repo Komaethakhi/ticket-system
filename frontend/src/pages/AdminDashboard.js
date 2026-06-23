@@ -187,7 +187,10 @@ function AdminDashboard() {
     try {
       setConfirmingOrderId(order.orderId);
       setError("");
-      await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
+      const res = await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
+      if (res.data?.whatsapp?.link && !res.data?.whatsapp?.sent) {
+        window.open(res.data.whatsapp.link, "_blank", "noopener,noreferrer");
+      }
       await loadSummary({ showLoader: false });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to confirm payment");
