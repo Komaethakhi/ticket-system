@@ -19,6 +19,7 @@ function AdminDashboard() {
   const [nameDrafts, setNameDrafts] = useState({});
   const [savingContactId, setSavingContactId] = useState("");
   const [confirmingOrderId, setConfirmingOrderId] = useState("");
+  const [approvalMessageLink, setApprovalMessageLink] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async ({ showLoader = true } = {}) => {
@@ -188,9 +189,7 @@ function AdminDashboard() {
       setConfirmingOrderId(order.orderId);
       setError("");
       const res = await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
-      if (res.data?.whatsapp?.link && !res.data?.whatsapp?.sent) {
-        window.open(res.data.whatsapp.link, "_blank", "noopener,noreferrer");
-      }
+      setApprovalMessageLink(res.data?.whatsapp?.link || "");
       await loadSummary({ showLoader: false });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to confirm payment");
@@ -278,6 +277,14 @@ function AdminDashboard() {
       </header>
 
       {error && <p className="admin-dashboard-error">{error}</p>}
+      {approvalMessageLink && (
+        <div className="admin-dashboard-error" style={{ background: "#ecfdf3", color: "#027a48" }}>
+          Payment approved. Click to send the customer confirmation WhatsApp message.
+          <a href={approvalMessageLink} target="_blank" rel="noreferrer" className="admin-whatsapp-link">
+            Send Confirmation Message
+          </a>
+        </div>
+      )}
       {loading && <LoadingSpinner fullHeight />}
 
       {!loading && data && (
