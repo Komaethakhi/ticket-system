@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import useIsMobile from "../hooks/useIsMobile";
+import mi27Logo from "../assets/mi27-logo.jpeg";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ function Navbar() {
   return (
     <div style={{ ...styles.nav, ...(isMobile ? styles.navMobile : {}) }}>
       <h2 style={{ ...styles.logo, ...(isMobile ? styles.logoMobile : {}) }}>
-        Herbalife Training Portal
+        <img src={mi27Logo} alt="MI27 Organization" style={styles.logoImage} />
+        <span>MI Portal</span>
       </h2>
 
       <div style={{ ...styles.actions, ...(isMobile ? styles.actionsMobile : {}) }}>
@@ -80,6 +82,15 @@ const styles = {
   logoMobile: {
     fontSize: "16px",
     maxWidth: "210px"
+  },
+  logoImage: {
+    width: "46px",
+    height: "30px",
+    objectFit: "contain",
+    background: "#fff",
+    borderRadius: "6px",
+    padding: "3px",
+    boxSizing: "border-box"
   },
   actions: {
     display: "flex",
