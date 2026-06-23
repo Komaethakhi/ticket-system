@@ -4,7 +4,8 @@ const router = express.Router();
 
 const Order = require("../models/Order");
 const User = require("../models/User");
-const { buildOrderWhatsAppLink } = require("../utils/whatsapp");
+const sendOrderMail = require("../utils/email");
+const { buildOrderWhatsAppLink, sendOrderWhatsAppConfirmation } = require("../utils/whatsapp");
 const { JWT_SECRET } = require("../middleware/auth");
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
@@ -130,6 +131,11 @@ const getConfirmedOrders = () =>
     .populate("eventId", "title date location ticket_price")
     .sort({ booked_at: -1 });
 
+const getSubmittedPaymentOrders = () =>
+  Order.find({ status: "PAYMENT_SUBMITTED" })
+    .populate("userId", "coachId mobileNumber")
+    .populate("eventId", "title date location ticket_price")
+    .sort({ submitted_at: 1, booked_at: 1 });
 const formatOrder = (order) => ({
   orderId: order._id,
   coachId: order.userId?.coachId || "Unknown",
@@ -192,11 +198,13 @@ router.post("/login", async (req, res) => {
 
 router.get("/summary", adminAuthMiddleware, async (req, res) => {
   try {
-    const [orders, coaches] = await Promise.all([
+    const [orders, submittedOrders, coaches] = await Promise.all([
       getConfirmedOrders(),
+      getSubmittedPaymentOrders(),
       User.find().select("coachId coachName mobileNumber createdAt updatedAt").sort({ coachId: 1 })
     ]);
     const rows = orders.map(formatOrder);
+    const pendingPaymentRows = submittedOrders.map(formatOrder);
 
     const coachMap = new Map();
     rows.forEach((row) => {
@@ -222,6 +230,7 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
         totalTicketsSold: rows.reduce((sum, row) => sum + row.quantity, 0),
         totalRevenue: rows.reduce((sum, row) => sum + row.amount, 0),
         totalOrders: rows.length,
+        pendingPayments: pendingPaymentRows.length,
         uniqueCoaches: coachSummary.length,
         registeredCoachIds: coaches.length,
         coachContacts: coaches.filter((coach) => coach.mobileNumber).length,
@@ -369,6 +378,55 @@ router.put("/coaches/:id/contact", adminAuthMiddleware, async (req, res) => {
   }
 });
 
+router.post("/orders/:id/confirm-payment", adminAuthMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("userId")
+      .populate("eventId");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status === "CONFIRMED") {
+      return res.status(400).json({ message: "This order is already confirmed" });
+    }
+
+    if (order.status !== "PAYMENT_SUBMITTED") {
+      return res.status(400).json({ message: "Payment has not been submitted for this order" });
+    }
+
+    order.status = "CONFIRMED";
+    order.verified_at = new Date();
+    order.admin_note = "Payment verified by admin";
+    await order.save();
+
+    if (order.userId.email) {
+      await sendOrderMail(order.userId.email, order, order.eventId);
+    }
+
+    let whatsappDelivery;
+    try {
+      whatsappDelivery = await sendOrderWhatsAppConfirmation(order);
+    } catch (whatsappErr) {
+      console.error("WhatsApp confirmation error:", whatsappErr);
+      whatsappDelivery = { sent: false, reason: "WHATSAPP_SEND_FAILED" };
+    }
+
+    res.json({
+      success: true,
+      message: "Payment verified and ticket confirmed.",
+      order: formatOrder(order),
+      whatsapp: {
+        ...whatsappDelivery,
+        link: buildOrderWhatsAppLink(order)
+      }
+    });
+  } catch (err) {
+    console.error("Admin confirm payment error:", err);
+    res.status(500).json({ message: "Failed to confirm payment" });
+  }
+});
 router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
   try {
     const orders = await getConfirmedOrders();

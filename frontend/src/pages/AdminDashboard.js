@@ -18,6 +18,7 @@ function AdminDashboard() {
   const [contactDrafts, setContactDrafts] = useState({});
   const [nameDrafts, setNameDrafts] = useState({});
   const [savingContactId, setSavingContactId] = useState("");
+  const [confirmingOrderId, setConfirmingOrderId] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async ({ showLoader = true } = {}) => {
@@ -174,6 +175,26 @@ function AdminDashboard() {
     }));
   };
 
+  const handleConfirmPayment = async (order) => {
+    const ok = window.confirm(
+      `Confirm payment for ${order.coachId} - Rs. ${order.amount}? Message will be sent only after this approval.`
+    );
+
+    if (!ok) {
+      return;
+    }
+
+    try {
+      setConfirmingOrderId(order.orderId);
+      setError("");
+      await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
+      await loadSummary({ showLoader: false });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to confirm payment");
+    } finally {
+      setConfirmingOrderId("");
+    }
+  };
   const handleSaveContact = async (coach) => {
     try {
       setSavingContactId(coach.id);
@@ -228,6 +249,7 @@ function AdminDashboard() {
   const totals = data?.totals || {};
   const coachSummary = data?.coachSummary || [];
   const coachContacts = data?.coachContacts || [];
+  const pendingPaymentOrders = data?.pendingPaymentOrders || [];
   const orders = data?.orders || [];
 
   return (
@@ -236,7 +258,7 @@ function AdminDashboard() {
         <div>
           <span className="admin-dashboard-badge">Admin</span>
           <h1>Ticket Sales Dashboard</h1>
-          <p>Live confirmed ticket orders from the database.</p>
+          <p>Verify submitted payments before ticket confirmations are sent.</p>
         </div>
         <div className="admin-dashboard-actions">
           {canBookTickets && (
@@ -271,8 +293,8 @@ function AdminDashboard() {
               <strong>{totals.totalOrders || 0}</strong>
             </article>
             <article>
-              <span>Auto Confirmed</span>
-              <strong>{totals.totalOrders || 0}</strong>
+              <span>Pending Verification</span>
+              <strong>{totals.pendingPayments || 0}</strong>
             </article>
             <article>
               <span>Unique IDs</span>
@@ -288,6 +310,55 @@ function AdminDashboard() {
             </article>
           </section>
 
+          <section className="admin-section">
+            <div className="admin-section-title">
+              <div>
+                <h2>Pending Payment Verification</h2>
+                <p>Confirm only after checking the payment in your UPI/bank account.</p>
+              </div>
+            </div>
+            <div className="admin-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Herbalife ID</th>
+                    <th>Training</th>
+                    <th>Qty</th>
+                    <th>Amount</th>
+                    <th>UPI Ref</th>
+                    <th>Submitted At</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingPaymentOrders.map((order) => (
+                    <tr key={order.orderId}>
+                      <td>{order.coachId}</td>
+                      <td>{order.eventTitle}</td>
+                      <td>{order.quantity}</td>
+                      <td>Rs. {order.amount}</td>
+                      <td>{order.transactionId || order.paymentId || "-"}</td>
+                      <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
+                      <td>
+                        <button
+                          className="admin-save-button"
+                          disabled={confirmingOrderId === order.orderId}
+                          onClick={() => handleConfirmPayment(order)}
+                        >
+                          {confirmingOrderId === order.orderId ? "Confirming..." : "Confirm Payment"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {pendingPaymentOrders.length === 0 && (
+                    <tr>
+                      <td colSpan="7">No payments waiting for verification.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
           <section className="admin-section">
             <div className="admin-section-title">
               <div>
@@ -465,7 +536,7 @@ function AdminDashboard() {
           <section className="admin-section">
             <div className="admin-section-title">
               <h2>Order Details</h2>
-              <p>Every confirmed ticket order that will be included in the Excel download.</p>
+              <p>Every admin-confirmed ticket order that will be included in the Excel download.</p>
             </div>
             <div className="admin-table-wrap">
               <table>

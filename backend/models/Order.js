@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema({
   // ticket status
   status: {
     type: String,
-    enum: ["PENDING", "CONFIRMED", "CANCELLED", "USED"],
+    enum: ["PENDING", "PAYMENT_SUBMITTED", "CONFIRMED", "CANCELLED", "USED"],
     default: "PENDING"
   },
 

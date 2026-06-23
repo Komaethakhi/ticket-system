@@ -5,11 +5,7 @@ const router = express.Router();
 const Event = require("../models/Event");
 const Order = require("../models/Order");
 const User = require("../models/User");
-const sendOrderMail = require("../utils/email");
-const {
-  buildOrderWhatsAppLink,
-  sendOrderWhatsAppConfirmation
-} = require("../utils/whatsapp");
+
 const { authMiddleware } = require("../middleware/auth");
 
 const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "9842426546@axisbank";
@@ -106,16 +102,18 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
     return res.status(400).json({ message: "Order ID is required" });
   }
 
-  try {
-    if (normalizedTransactionId) {
-      const duplicate = await Order.findOne({
-        transaction_id: normalizedTransactionId,
-        _id: { $ne: orderId }
-      });
+  if (!normalizedTransactionId) {
+    return res.status(400).json({ message: "Enter the UPI transaction/reference ID after payment" });
+  }
 
-      if (duplicate) {
-        return res.status(409).json({ message: "This transaction ID is already submitted" });
-      }
+  try {
+    const duplicate = await Order.findOne({
+      transaction_id: normalizedTransactionId,
+      _id: { $ne: orderId }
+    });
+
+    if (duplicate) {
+      return res.status(409).json({ message: "This transaction ID is already submitted" });
     }
 
     const order = await Order.findOne({
@@ -133,42 +131,30 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "This order is already confirmed" });
     }
 
+    if (order.status === "PAYMENT_SUBMITTED") {
+      return res.status(400).json({ message: "Payment is already submitted and waiting for admin verification" });
+    }
+
     if (!order.userId.mobileNumber) {
       return res.status(400).json({
         message: "WhatsApp number is not saved for this coach ID. Please contact admin."
       });
     }
 
-    order.payment_id = normalizedTransactionId || `UPI-${order._id}`;
-    order.transaction_id = normalizedTransactionId || undefined;
+    order.payment_id = normalizedTransactionId;
+    order.transaction_id = normalizedTransactionId;
     order.whatsapp_number = order.userId.mobileNumber;
     order.payment_method = "UPI_QR";
-    order.status = "CONFIRMED";
+    order.status = "PAYMENT_SUBMITTED";
     order.submitted_at = new Date();
-    order.verified_at = new Date();
-    order.admin_note = "Auto confirmed after customer marked UPI payment done";
+    order.verified_at = undefined;
+    order.admin_note = "Customer submitted UPI reference; waiting for admin verification";
     await order.save();
-
-    if (order.userId.email) {
-      await sendOrderMail(order.userId.email, order, order.eventId);
-    }
-
-    let whatsappDelivery;
-    try {
-      whatsappDelivery = await sendOrderWhatsAppConfirmation(order);
-    } catch (whatsappErr) {
-      console.error("WhatsApp confirmation error:", whatsappErr);
-      whatsappDelivery = { sent: false, reason: "WHATSAPP_SEND_FAILED" };
-    }
 
     res.json({
       success: true,
-      message: "Payment confirmed. Your ticket is booked.",
-      order,
-      whatsapp: {
-        ...whatsappDelivery,
-        link: buildOrderWhatsAppLink(order)
-      }
+      message: "Payment details submitted. Admin will verify the payment before confirming your ticket.",
+      order
     });
   } catch (err) {
     console.error("Submit payment error:", err);

@@ -24,6 +24,7 @@ function TrainingDetails() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
+  const [transactionId, setTransactionId] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const isMobile = useIsMobile();
 
@@ -114,18 +115,21 @@ function TrainingDetails() {
       return;
     }
 
+    if (!transactionId.trim()) {
+      setPaymentMessage("Enter the UPI transaction/reference ID after payment.");
+      return;
+    }
+
     try {
       setPaying(true);
       setPaymentMessage("");
       const res = await api.post("/orders/submit-payment", {
-        orderId: paymentOrder.orderId
+        orderId: paymentOrder.orderId,
+        transactionId: transactionId.trim()
       });
-      if (res.data?.whatsapp?.link) {
-        window.open(res.data.whatsapp.link, "_blank", "noopener,noreferrer");
-      }
-      setPaymentMessage("Payment confirmed. Your ticket is booked.");
+      setPaymentMessage(res.data?.message || "Payment details submitted for admin verification.");
       setPaymentOrder(null);
-      navigate("/my-tickets");
+      setTransactionId("");
     } catch (err) {
       setPaymentMessage(err.response?.data?.message || "Payment submission failed");
     } finally {
@@ -267,8 +271,8 @@ function TrainingDetails() {
               <div>
                 <h2 style={styles.sectionTitle}>Pay Using UPI QR</h2>
                 <p style={styles.bodyText}>
-                  Scan the QR code and pay the exact amount. After payment, confirm below to book
-                  your ticket instantly.
+                  Scan the QR code and pay the exact amount. After payment, enter the UPI
+                  transaction/reference ID. Admin will verify it before confirming your ticket.
                 </p>
                 <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Payee</span>
@@ -296,9 +300,17 @@ function TrainingDetails() {
               </div>
 
               <form onSubmit={handleSubmitPayment} style={styles.transactionForm}>
+                <label style={styles.inputLabel} htmlFor="transaction-id">UPI transaction/reference ID</label>
+                <input
+                  id="transaction-id"
+                  style={styles.transactionInput}
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 40))}
+                  placeholder="Example: 426789123456"
+                />
                 {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
                 <button className="details-book-button" disabled={paying} style={styles.bookBtn}>
-                  {paying ? "Confirming..." : "Payment Done - Confirm Order"}
+                  {paying ? "Submitting..." : "Submit Payment for Verification"}
                 </button>
               </form>
             </section>
