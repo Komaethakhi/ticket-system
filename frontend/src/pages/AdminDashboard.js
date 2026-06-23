@@ -177,7 +177,7 @@ function AdminDashboard() {
 
   const handleConfirmPayment = async (order) => {
     const ok = window.confirm(
-      `Confirm payment for ${order.coachId} - Rs. ${order.amount}? Message will be sent only after this approval.`
+      `Approve payment for ${order.coachId} - Rs. ${order.amount}? Customer message will be sent only after this approval.`
     );
 
     if (!ok) {
@@ -314,7 +314,7 @@ function AdminDashboard() {
             <div className="admin-section-title">
               <div>
                 <h2>Pending Payment Verification</h2>
-                <p>Confirm only after checking the payment in your UPI/bank account.</p>
+                <p>Open the screenshot, verify the payment in your UPI/bank account, then approve.</p>
               </div>
             </div>
             <div className="admin-table-wrap">
@@ -325,7 +325,7 @@ function AdminDashboard() {
                     <th>Training</th>
                     <th>Qty</th>
                     <th>Amount</th>
-                    <th>UPI Ref</th>
+                    <th>Screenshot</th>
                     <th>Submitted At</th>
                     <th>Action</th>
                   </tr>
@@ -337,7 +337,18 @@ function AdminDashboard() {
                       <td>{order.eventTitle}</td>
                       <td>{order.quantity}</td>
                       <td>Rs. {order.amount}</td>
-                      <td>{order.transactionId || order.paymentId || "-"}</td>
+                      <td>
+                        {order.paymentScreenshot ? (
+                          <a
+                            href={order.paymentScreenshot}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="admin-whatsapp-link"
+                          >
+                            View Screenshot
+                          </a>
+                        ) : "-"}
+                      </td>
                       <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
                       <td>
                         <button
@@ -345,7 +356,7 @@ function AdminDashboard() {
                           disabled={confirmingOrderId === order.orderId}
                           onClick={() => handleConfirmPayment(order)}
                         >
-                          {confirmingOrderId === order.orderId ? "Confirming..." : "Confirm Payment"}
+                          {confirmingOrderId === order.orderId ? "Approving..." : "Approve Payment"}
                         </button>
                       </td>
                     </tr>

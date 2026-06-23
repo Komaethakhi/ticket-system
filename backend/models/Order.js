@@ -33,6 +33,19 @@ const orderSchema = new mongoose.Schema({
     sparse: true,
     unique: true
   },
+  payment_screenshot: {
+    type: String
+  },
+
+  payment_screenshot_name: {
+    type: String,
+    trim: true
+  },
+
+  payment_screenshot_type: {
+    type: String,
+    trim: true
+  },
 
   whatsapp_number: {
     type: String,

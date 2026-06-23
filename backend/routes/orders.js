@@ -5,6 +5,7 @@ const router = express.Router();
 const Event = require("../models/Event");
 const Order = require("../models/Order");
 const User = require("../models/User");
+const { sendAdminPaymentSubmittedNotification } = require("../utils/whatsapp");
 
 const { authMiddleware } = require("../middleware/auth");
 
@@ -12,6 +13,14 @@ const PAYMENT_UPI_ID = process.env.PAYMENT_UPI_ID || "9842426546@axisbank";
 const PAYMENT_UPI_NUMBER = process.env.PAYMENT_UPI_NUMBER || "9842426546";
 const PAYMENT_PAYEE_NAME = process.env.PAYMENT_PAYEE_NAME || "ANANTH";
 const OPEN_EVENT_TITLE = "WELLNESS SEMINAR";
+const MAX_PAYMENT_SCREENSHOT_LENGTH = 3000000;
+const PAYMENT_SCREENSHOT_PATTERN = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
+
+const normalizeScreenshotName = (name) => String(name || "payment-screenshot").replace(/[^\w. -]/g, "").slice(0, 80);
+const getScreenshotType = (dataUrl) => {
+  const match = String(dataUrl || "").match(/^data:(image\/(?:png|jpe?g|webp));base64,/i);
+  return match ? match[1].toLowerCase() : "";
+};
 
 const buildUpiLink = ({ amount, orderId }) => {
   const params = new URLSearchParams({
@@ -95,27 +104,22 @@ router.post("/create", authMiddleware, async (req, res) => {
 });
 
 router.post("/submit-payment", authMiddleware, async (req, res) => {
-  const { orderId, transactionId } = req.body;
-  const normalizedTransactionId = String(transactionId || "").trim().toUpperCase();
+  const { orderId, paymentScreenshot, paymentScreenshotName } = req.body;
+  const screenshotProof = String(paymentScreenshot || "").trim();
 
   if (!orderId) {
     return res.status(400).json({ message: "Order ID is required" });
   }
 
-  if (!normalizedTransactionId) {
-    return res.status(400).json({ message: "Enter the UPI transaction/reference ID after payment" });
+  if (!screenshotProof) {
+    return res.status(400).json({ message: "Upload the payment screenshot after payment" });
+  }
+
+  if (screenshotProof.length > MAX_PAYMENT_SCREENSHOT_LENGTH || !PAYMENT_SCREENSHOT_PATTERN.test(screenshotProof)) {
+    return res.status(400).json({ message: "Upload a valid PNG, JPG, or WEBP screenshot under 2 MB" });
   }
 
   try {
-    const duplicate = await Order.findOne({
-      transaction_id: normalizedTransactionId,
-      _id: { $ne: orderId }
-    });
-
-    if (duplicate) {
-      return res.status(409).json({ message: "This transaction ID is already submitted" });
-    }
-
     const order = await Order.findOne({
       _id: orderId,
       userId: req.user.userId
@@ -132,7 +136,7 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
     }
 
     if (order.status === "PAYMENT_SUBMITTED") {
-      return res.status(400).json({ message: "Payment is already submitted and waiting for admin verification" });
+      return res.status(400).json({ message: "Payment screenshot is already submitted and waiting for admin verification" });
     }
 
     if (!order.userId.mobileNumber) {
@@ -141,20 +145,32 @@ router.post("/submit-payment", authMiddleware, async (req, res) => {
       });
     }
 
-    order.payment_id = normalizedTransactionId;
-    order.transaction_id = normalizedTransactionId;
+    order.payment_id = `SCREENSHOT-${order._id}`;
+    order.transaction_id = undefined;
+    order.payment_screenshot = screenshotProof;
+    order.payment_screenshot_name = normalizeScreenshotName(paymentScreenshotName);
+    order.payment_screenshot_type = getScreenshotType(screenshotProof);
     order.whatsapp_number = order.userId.mobileNumber;
     order.payment_method = "UPI_QR";
     order.status = "PAYMENT_SUBMITTED";
     order.submitted_at = new Date();
     order.verified_at = undefined;
-    order.admin_note = "Customer submitted UPI reference; waiting for admin verification";
+    order.admin_note = "Customer submitted payment screenshot; waiting for admin verification";
     await order.save();
+
+    let adminNotification;
+    try {
+      adminNotification = await sendAdminPaymentSubmittedNotification(order);
+    } catch (notificationErr) {
+      console.error("Admin payment notification error:", notificationErr);
+      adminNotification = { sent: false, reason: "ADMIN_NOTIFICATION_FAILED" };
+    }
 
     res.json({
       success: true,
-      message: "Payment details submitted. Admin will verify the payment before confirming your ticket.",
-      order
+      message: "Payment screenshot submitted. Admin will verify and approve your ticket.",
+      order,
+      adminNotification
     });
   } catch (err) {
     console.error("Submit payment error:", err);

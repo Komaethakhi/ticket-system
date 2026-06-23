@@ -29,7 +29,7 @@ app.use(cors({
     return callback(new Error("Not allowed by CORS"));
   }
 }));
-app.use(express.json());
+app.use(express.json({ limit: "6mb" }));
 
 app.get("/api/health", (req, res) => {
   res.json({

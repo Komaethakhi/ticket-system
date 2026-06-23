@@ -24,7 +24,8 @@ function TrainingDetails() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [paymentOrder, setPaymentOrder] = useState(null);
-  const [transactionId, setTransactionId] = useState("");
+  const [paymentScreenshot, setPaymentScreenshot] = useState("");
+  const [paymentScreenshotName, setPaymentScreenshotName] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const isMobile = useIsMobile();
 
@@ -107,6 +108,37 @@ function TrainingDetails() {
     }
   };
 
+  const handlePaymentScreenshotChange = (e) => {
+    const file = e.target.files?.[0];
+
+    setPaymentMessage("");
+    setPaymentScreenshot("");
+    setPaymentScreenshotName("");
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.match(/^image\/(png|jpe?g|webp)$/i)) {
+      setPaymentMessage("Upload a PNG, JPG, or WEBP payment screenshot.");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setPaymentMessage("Screenshot must be under 2 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPaymentScreenshot(String(reader.result || ""));
+      setPaymentScreenshotName(file.name);
+    };
+    reader.onerror = () => {
+      setPaymentMessage("Could not read the screenshot. Please try another image.");
+    };
+    reader.readAsDataURL(file);
+  };
   const handleSubmitPayment = async (e) => {
     e.preventDefault();
 
@@ -115,8 +147,8 @@ function TrainingDetails() {
       return;
     }
 
-    if (!transactionId.trim()) {
-      setPaymentMessage("Enter the UPI transaction/reference ID after payment.");
+    if (!paymentScreenshot) {
+      setPaymentMessage("Upload the payment screenshot after payment.");
       return;
     }
 
@@ -125,11 +157,13 @@ function TrainingDetails() {
       setPaymentMessage("");
       const res = await api.post("/orders/submit-payment", {
         orderId: paymentOrder.orderId,
-        transactionId: transactionId.trim()
+        paymentScreenshot,
+        paymentScreenshotName
       });
-      setPaymentMessage(res.data?.message || "Payment details submitted for admin verification.");
+      setPaymentMessage(res.data?.message || "Payment screenshot submitted for admin verification.");
       setPaymentOrder(null);
-      setTransactionId("");
+      setPaymentScreenshot("");
+      setPaymentScreenshotName("");
     } catch (err) {
       setPaymentMessage(err.response?.data?.message || "Payment submission failed");
     } finally {
@@ -271,8 +305,8 @@ function TrainingDetails() {
               <div>
                 <h2 style={styles.sectionTitle}>Pay Using UPI QR</h2>
                 <p style={styles.bodyText}>
-                  Scan the QR code and pay the exact amount. After payment, enter the UPI
-                  transaction/reference ID. Admin will verify it before confirming your ticket.
+                  Scan the QR code and pay the exact amount. After payment, upload the payment
+                  screenshot. Admin will verify it before confirming your ticket.
                 </p>
                 <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                   <span>Payee</span>
@@ -300,17 +334,18 @@ function TrainingDetails() {
               </div>
 
               <form onSubmit={handleSubmitPayment} style={styles.transactionForm}>
-                <label style={styles.inputLabel} htmlFor="transaction-id">UPI transaction/reference ID</label>
+                <label style={styles.inputLabel} htmlFor="payment-screenshot">Payment screenshot</label>
                 <input
-                  id="transaction-id"
+                  id="payment-screenshot"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
                   style={styles.transactionInput}
-                  value={transactionId}
-                  onChange={(e) => setTransactionId(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 40))}
-                  placeholder="Example: 426789123456"
+                  onChange={handlePaymentScreenshotChange}
                 />
+                {paymentScreenshotName && <p style={styles.muted}>Selected: {paymentScreenshotName}</p>}
                 {paymentMessage && <p style={styles.paymentMessage}>{paymentMessage}</p>}
                 <button className="details-book-button" disabled={paying} style={styles.bookBtn}>
-                  {paying ? "Submitting..." : "Submit Payment for Verification"}
+                  {paying ? "Submitting..." : "Submit Screenshot for Verification"}
                 </button>
               </form>
             </section>
