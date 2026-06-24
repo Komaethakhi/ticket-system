@@ -127,18 +127,19 @@ const parseCoachContactEntry = (entry) => {
 
 const getConfirmedOrders = () =>
   Order.find({ status: "CONFIRMED" })
-    .populate("userId", "coachId mobileNumber")
+    .populate("userId", "coachId coachName mobileNumber")
     .populate("eventId", "title date location ticket_price")
     .sort({ booked_at: -1 });
 
 const getSubmittedPaymentOrders = () =>
   Order.find({ status: "PAYMENT_SUBMITTED" })
-    .populate("userId", "coachId mobileNumber")
+    .populate("userId", "coachId coachName mobileNumber")
     .populate("eventId", "title date location ticket_price")
     .sort({ submitted_at: 1, booked_at: 1 });
 const formatOrder = (order) => ({
   orderId: order._id,
   coachId: order.userId?.coachId || "Unknown",
+  coachName: order.userId?.coachName || "",
   eventTitle: order.eventId?.title || "Unknown event",
   eventDate: order.eventId?.date || "",
   location: order.eventId?.location || "",
@@ -525,6 +526,7 @@ router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
     const headers = [
       "Order ID",
       "Herbalife ID",
+      "Coach Name",
       "Training",
       "Date",
       "Location",
@@ -543,6 +545,7 @@ router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
         [
           row.orderId,
           row.coachId,
+          row.coachName,
           row.eventTitle,
           row.eventDate,
           row.location,
