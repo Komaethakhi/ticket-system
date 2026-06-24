@@ -4,7 +4,7 @@ const router = express.Router();
 const User = require("../models/User");
 const { authMiddleware, JWT_SECRET } = require("../middleware/auth");
 
-const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C123456").toUpperCase();
+const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C937193").toUpperCase();
 
 router.post("/login", async (req, res) => {
   try {
@@ -16,6 +16,10 @@ router.post("/login", async (req, res) => {
     }
 
     let user = await User.findOne({ coachId: normalizedCoachId });
+
+    if (!user && normalizedCoachId === ADMIN_COACH_ID) {
+      user = await User.create({ coachId: ADMIN_COACH_ID });
+    }
 
     if (!user) {
       return res.status(401).json({ message: "Herbalife ID not found" });

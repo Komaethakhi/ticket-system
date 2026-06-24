@@ -64,7 +64,7 @@ function AdminDashboard() {
     sessionStorage.removeItem("role");
     sessionStorage.removeItem("adminToken");
     sessionStorage.removeItem("adminUsername");
-    navigate("/admin/login", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const handleExport = async () => {

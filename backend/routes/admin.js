@@ -10,7 +10,7 @@ const { JWT_SECRET } = require("../middleware/auth");
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@123";
-const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C123456").toUpperCase();
+const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C937193").toUpperCase();
 
 const adminAuthMiddleware = (req, res, next) => {
   try {

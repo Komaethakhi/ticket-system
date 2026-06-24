@@ -44,7 +44,7 @@ function Login() {
         sessionStorage.setItem("coachLoggedIn", "true");
         sessionStorage.setItem("adminToken", res.data.token);
         sessionStorage.setItem("adminUsername", res.data.coachId);
-        navigate("/", { replace: true });
+        navigate("/admin", { replace: true });
         return;
       }
 
