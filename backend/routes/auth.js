@@ -4,7 +4,7 @@ const router = express.Router();
 const User = require("../models/User");
 const { authMiddleware, JWT_SECRET } = require("../middleware/auth");
 
-const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C937193").toUpperCase();
+const ADMIN_COACH_ID = (process.env.ADMIN_COACH_ID || "W1C123456").toUpperCase();
 
 router.post("/login", async (req, res) => {
   try {
