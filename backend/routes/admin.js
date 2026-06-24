@@ -214,11 +214,15 @@ router.get("/summary", adminAuthMiddleware, async (req, res) => {
     rows.forEach((row) => {
       const current = coachMap.get(row.coachId) || {
         coachId: row.coachId,
+        coachName: row.coachName,
         totalTickets: 0,
         totalAmount: 0,
         orderCount: 0
       };
 
+      if (!current.coachName && row.coachName) {
+        current.coachName = row.coachName;
+      }
       current.totalTickets += row.quantity;
       current.totalAmount += row.amount;
       current.orderCount += 1;

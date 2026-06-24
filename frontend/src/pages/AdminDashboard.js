@@ -238,10 +238,24 @@ function AdminDashboard() {
         const coachContacts = (currentData.coachContacts || []).map((contact) =>
           contact.id === coach.id ? res.data.coach : contact
         );
+        const nextCoachName = res.data.coach.coachName || "";
+        const nextCoachId = res.data.coach.coachId;
+        const coachSummary = (currentData.coachSummary || []).map((summary) =>
+          summary.coachId === nextCoachId ? { ...summary, coachName: nextCoachName } : summary
+        );
+        const orders = (currentData.orders || []).map((order) =>
+          order.coachId === nextCoachId ? { ...order, coachName: nextCoachName } : order
+        );
+        const pendingPaymentOrders = (currentData.pendingPaymentOrders || []).map((order) =>
+          order.coachId === nextCoachId ? { ...order, coachName: nextCoachName } : order
+        );
 
         return {
           ...currentData,
           coachContacts,
+          coachSummary,
+          orders,
+          pendingPaymentOrders,
           totals: {
             ...currentData.totals,
             coachContacts: coachContacts.filter((contact) => contact.mobileNumber).length,
@@ -566,6 +580,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Herbalife ID</th>
+                    <th>Coach Name</th>
                     <th>Orders</th>
                     <th>Tickets</th>
                     <th>Amount</th>
@@ -575,6 +590,7 @@ function AdminDashboard() {
                   {coachSummary.map((coach) => (
                     <tr key={coach.coachId}>
                       <td>{coach.coachId}</td>
+                      <td>{coach.coachName || "-"}</td>
                       <td>{coach.orderCount}</td>
                       <td>{coach.totalTickets}</td>
                       <td>Rs. {coach.totalAmount}</td>
@@ -582,7 +598,7 @@ function AdminDashboard() {
                   ))}
                   {coachSummary.length === 0 && (
                     <tr>
-                      <td colSpan="4">No confirmed orders yet.</td>
+                      <td colSpan="5">No confirmed orders yet.</td>
                     </tr>
                   )}
                 </tbody>
@@ -600,6 +616,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Herbalife ID</th>
+                    <th>Coach Name</th>
                     <th>Training</th>
                     <th>Date</th>
                     <th>Qty</th>
@@ -613,6 +630,7 @@ function AdminDashboard() {
                   {orders.map((order) => (
                     <tr key={order.orderId}>
                       <td>{order.coachId}</td>
+                      <td>{order.coachName || "-"}</td>
                       <td>{order.eventTitle}</td>
                       <td>{order.eventDate}</td>
                       <td>{order.quantity}</td>
@@ -635,7 +653,7 @@ function AdminDashboard() {
                   ))}
                   {orders.length === 0 && (
                     <tr>
-                      <td colSpan="8">No confirmed orders yet.</td>
+                      <td colSpan="9">No confirmed orders yet.</td>
                     </tr>
                   )}
                 </tbody>
