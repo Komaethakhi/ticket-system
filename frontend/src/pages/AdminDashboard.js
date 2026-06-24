@@ -21,6 +21,7 @@ function AdminDashboard() {
   const [confirmingOrderId, setConfirmingOrderId] = useState("");
   const [rejectingOrderId, setRejectingOrderId] = useState("");
   const [approvalMessageLink, setApprovalMessageLink] = useState("");
+  const [approvalMessageStatus, setApprovalMessageStatus] = useState("");
   const navigate = useNavigate();
 
   const loadSummary = async ({ showLoader = true } = {}) => {
@@ -190,8 +191,19 @@ function AdminDashboard() {
       setConfirmingOrderId(order.orderId);
       setError("");
       setApprovalMessageLink("");
+      setApprovalMessageStatus("");
       const res = await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
-      setApprovalMessageLink(res.data?.whatsapp?.link || "");
+      const whatsapp = res.data?.whatsapp || {};
+      if (whatsapp.sent) {
+        setApprovalMessageStatus(
+          whatsapp.type === "image"
+            ? "Payment approved. Image confirmation sent automatically on WhatsApp."
+            : "Payment approved. Confirmation sent automatically on WhatsApp."
+        );
+      } else {
+        setApprovalMessageStatus("Payment approved, but automatic WhatsApp sending failed. Send the text message manually.");
+        setApprovalMessageLink(whatsapp.link || "");
+      }
       await loadSummary({ showLoader: false });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to confirm payment");
@@ -213,6 +225,7 @@ function AdminDashboard() {
       setRejectingOrderId(order.orderId);
       setError("");
       setApprovalMessageLink("");
+      setApprovalMessageStatus("");
       await api.post(`/admin/orders/${order.orderId}/reject-payment`);
       await loadSummary({ showLoader: false });
     } catch (err) {
@@ -316,12 +329,14 @@ function AdminDashboard() {
       </header>
 
       {error && <p className="admin-dashboard-error">{error}</p>}
-      {approvalMessageLink && (
+      {approvalMessageStatus && (
         <div className="admin-dashboard-error" style={{ background: "#ecfdf3", color: "#027a48" }}>
-          Payment approved. Click to send the customer confirmation WhatsApp message.
-          <a href={approvalMessageLink} target="_blank" rel="noreferrer" className="admin-whatsapp-link">
-            Send Confirmation Message
-          </a>
+          {approvalMessageStatus}
+          {approvalMessageLink && (
+            <a href={approvalMessageLink} target="_blank" rel="noreferrer" className="admin-whatsapp-link">
+              Send Confirmation Message
+            </a>
+          )}
         </div>
       )}
       {loading && <LoadingSpinner fullHeight />}

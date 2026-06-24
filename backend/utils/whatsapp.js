@@ -240,37 +240,58 @@ const buildOrderWhatsAppLink = (order) => {
 const sendOrderWhatsAppConfirmation = async (order) => {
   const recipientNumber = getOrderWhatsAppNumber(order);
   const confirmationMessage = buildOrderConfirmationMessage(order);
+  let imageFailure;
+  let templateFailure;
 
   try {
-    return await sendImageWhatsAppMessage({
+    const imageDelivery = await sendImageWhatsAppMessage({
       recipientNumber,
       imageUrl: getOrderConfirmationImageUrl(),
       caption: confirmationMessage
     });
+
+    if (imageDelivery.sent) {
+      return imageDelivery;
+    }
+
+    imageFailure = imageDelivery;
   } catch (imageErr) {
     console.error("WhatsApp confirmation image error:", imageErr);
+    imageFailure = { sent: false, reason: "WHATSAPP_IMAGE_SEND_FAILED", error: imageErr.message };
   }
 
   try {
-    return await sendTemplateWhatsAppMessage({
+    const templateDelivery = await sendTemplateWhatsAppMessage({
       recipientNumber,
       templateName: getOrderConfirmationTemplateName(),
       languageCode: getWhatsAppTemplateLanguage(),
       components: buildOrderConfirmationTemplateComponents(order)
     });
+
+    if (templateDelivery.sent) {
+      return {
+        ...templateDelivery,
+        imageFailure
+      };
+    }
+
+    templateFailure = templateDelivery;
   } catch (templateErr) {
     console.error("WhatsApp confirmation template error:", templateErr);
-    const textDelivery = await sendTextWhatsAppMessage({
-      recipientNumber,
-      body: confirmationMessage
-    });
-
-    return {
-      ...textDelivery,
-      fallback: true,
-      templateError: templateErr.message
-    };
+    templateFailure = { sent: false, reason: "WHATSAPP_TEMPLATE_SEND_FAILED", error: templateErr.message };
   }
+
+  const textDelivery = await sendTextWhatsAppMessage({
+    recipientNumber,
+    body: confirmationMessage
+  });
+
+  return {
+    ...textDelivery,
+    fallback: true,
+    imageFailure,
+    templateFailure
+  };
 };
 
 module.exports = {
