@@ -400,7 +400,7 @@ function AdminDashboard() {
                     <input
                       value={row.coachId}
                       onChange={(e) => handleCoachRowChange(index, "coachId", e.target.value)}
-                      placeholder="W1C4642850"
+                      placeholder="W1C123456"
                     />
                     <input
                       value={row.coachName}
@@ -410,7 +410,7 @@ function AdminDashboard() {
                     <input
                       value={row.mobileNumber}
                       onChange={(e) => handleCoachRowChange(index, "mobileNumber", e.target.value)}
-                      placeholder="9876543210"
+                      placeholder="1234567890"
                     />
                     <button
                       type="button"
