@@ -357,6 +357,7 @@ function AdminDashboard() {
                 <thead>
                   <tr>
                     <th>Herbalife ID</th>
+                    <th>Coach Name</th>
                     <th>Training</th>
                     <th>Qty</th>
                     <th>Amount</th>
@@ -369,6 +370,7 @@ function AdminDashboard() {
                   {pendingPaymentOrders.map((order) => (
                     <tr key={order.orderId}>
                       <td>{order.coachId}</td>
+                      <td>{order.coachName || "-"}</td>
                       <td>{order.eventTitle}</td>
                       <td>{order.quantity}</td>
                       <td>Rs. {order.amount}</td>
@@ -407,7 +409,7 @@ function AdminDashboard() {
                   ))}
                   {pendingPaymentOrders.length === 0 && (
                     <tr>
-                      <td colSpan="7">No payments waiting for verification.</td>
+                      <td colSpan="8">No payments waiting for verification.</td>
                     </tr>
                   )}
                 </tbody>
