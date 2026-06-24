@@ -431,6 +431,92 @@ router.post("/orders/:id/confirm-payment", adminAuthMiddleware, async (req, res)
     res.status(500).json({ message: "Failed to confirm payment" });
   }
 });
+
+router.post("/orders/:id/reject-payment", adminAuthMiddleware, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("userId", "coachId mobileNumber")
+      .populate("eventId", "title date location ticket_price");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.status === "CANCELLED") {
+      return res.status(400).json({ message: "This order is already rejected" });
+    }
+
+    if (order.status !== "PAYMENT_SUBMITTED") {
+      return res.status(400).json({ message: "Only pending payment submissions can be rejected" });
+    }
+
+    order.status = "CANCELLED";
+    order.admin_note = "Payment rejected by admin";
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Payment rejected and pending order removed.",
+      order: formatOrder(order)
+    });
+  } catch (err) {
+    console.error("Admin reject payment error:", err);
+    res.status(500).json({ message: "Failed to reject payment" });
+  }
+});
+
+router.post("/coaches/:coachId/pending-orders/remove-one-ticket", adminAuthMiddleware, async (req, res) => {
+  try {
+    const coachId = String(req.params.coachId || "").trim().toUpperCase();
+
+    if (!/^(?=[A-Z0-9]*[A-Z])[A-Z0-9]{8,10}$/.test(coachId)) {
+      return res.status(400).json({ message: "Enter a valid Herbalife ID" });
+    }
+
+    const coach = await User.findOne({ coachId });
+
+    if (!coach) {
+      return res.status(404).json({ message: "Coach ID not found" });
+    }
+
+    const order = await Order.findOne({
+      userId: coach._id,
+      status: "PAYMENT_SUBMITTED"
+    })
+      .populate("userId", "coachId mobileNumber")
+      .populate("eventId")
+      .sort({ submitted_at: -1, booked_at: -1 });
+
+    if (!order) {
+      return res.status(404).json({ message: "No pending payment request found for this coach ID" });
+    }
+
+    const previousQuantity = order.quantity;
+    const ticketPrice = Number(order.eventId?.ticket_price || 0);
+
+    if (previousQuantity > 1) {
+      order.quantity = previousQuantity - 1;
+      order.amount = Math.max(0, Number(order.amount || 0) - ticketPrice);
+      order.admin_note = `Admin removed one pending ticket. Previous quantity: ${previousQuantity}.`;
+    } else {
+      order.status = "CANCELLED";
+      order.admin_note = "Admin cancelled pending request after removing its only ticket.";
+    }
+
+    await order.save();
+
+    res.json({
+      success: true,
+      removedTickets: 1,
+      previousQuantity,
+      order: formatOrder(order)
+    });
+  } catch (err) {
+    console.error("Remove pending ticket error:", err);
+    res.status(500).json({ message: "Failed to remove pending ticket" });
+  }
+});
+
 router.get("/orders/export", adminAuthMiddleware, async (req, res) => {
   try {
     const orders = await getConfirmedOrders();

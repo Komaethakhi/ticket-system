@@ -19,6 +19,7 @@ function AdminDashboard() {
   const [nameDrafts, setNameDrafts] = useState({});
   const [savingContactId, setSavingContactId] = useState("");
   const [confirmingOrderId, setConfirmingOrderId] = useState("");
+  const [rejectingOrderId, setRejectingOrderId] = useState("");
   const [approvalMessageLink, setApprovalMessageLink] = useState("");
   const navigate = useNavigate();
 
@@ -188,6 +189,7 @@ function AdminDashboard() {
     try {
       setConfirmingOrderId(order.orderId);
       setError("");
+      setApprovalMessageLink("");
       const res = await api.post(`/admin/orders/${order.orderId}/confirm-payment`);
       setApprovalMessageLink(res.data?.whatsapp?.link || "");
       await loadSummary({ showLoader: false });
@@ -197,6 +199,29 @@ function AdminDashboard() {
       setConfirmingOrderId("");
     }
   };
+
+  const handleRejectPayment = async (order) => {
+    const ok = window.confirm(
+      `Reject payment for ${order.coachId} - Rs. ${order.amount}? This will remove the order from pending verification.`
+    );
+
+    if (!ok) {
+      return;
+    }
+
+    try {
+      setRejectingOrderId(order.orderId);
+      setError("");
+      setApprovalMessageLink("");
+      await api.post(`/admin/orders/${order.orderId}/reject-payment`);
+      await loadSummary({ showLoader: false });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to reject payment");
+    } finally {
+      setRejectingOrderId("");
+    }
+  };
+
   const handleSaveContact = async (coach) => {
     try {
       setSavingContactId(coach.id);
@@ -361,13 +386,22 @@ function AdminDashboard() {
                       </td>
                       <td>{order.submittedAt ? new Date(order.submittedAt).toLocaleString() : "-"}</td>
                       <td>
-                        <button
-                          className="admin-save-button"
-                          disabled={confirmingOrderId === order.orderId}
-                          onClick={() => handleConfirmPayment(order)}
-                        >
-                          {confirmingOrderId === order.orderId ? "Approving..." : "Approve Payment"}
-                        </button>
+                        <div className="admin-row-actions">
+                          <button
+                            className="admin-save-button"
+                            disabled={confirmingOrderId === order.orderId || rejectingOrderId === order.orderId}
+                            onClick={() => handleConfirmPayment(order)}
+                          >
+                            {confirmingOrderId === order.orderId ? "Approving..." : "Approve Payment"}
+                          </button>
+                          <button
+                            className="admin-reject-button"
+                            disabled={confirmingOrderId === order.orderId || rejectingOrderId === order.orderId}
+                            onClick={() => handleRejectPayment(order)}
+                          >
+                            {rejectingOrderId === order.orderId ? "Rejecting..." : "Reject"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

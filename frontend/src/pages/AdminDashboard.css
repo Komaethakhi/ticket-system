@@ -355,9 +355,11 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.admin-save-button {
+.admin-save-button,
+.admin-reject-button {
   min-height: 36px;
   padding: 0 12px;
   border: none;
@@ -369,6 +371,10 @@
 
 .admin-save-button {
   background: #17351f;
+}
+
+.admin-reject-button {
+  background: #b42318;
 }
 
 .admin-whatsapp-link {
@@ -384,7 +390,8 @@
   white-space: nowrap;
 }
 
-.admin-save-button:disabled {
+.admin-save-button:disabled,
+.admin-reject-button:disabled {
   opacity: 0.7;
   cursor: wait;
 }
