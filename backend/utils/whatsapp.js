@@ -12,7 +12,7 @@ const getOrderWhatsAppNumber = (order) =>
   order?.whatsapp_number || order?.userId?.mobileNumber || "";
 
 const getPublicAppUrl = () =>
-  String(process.env.PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://myherbalife.mi27.in")
+  String(process.env.PUBLIC_APP_URL || process.env.FRONTEND_URL || "https://ticket-system-vpr6.onrender.com")
     .replace(/\/+$/, "");
 
 const getOrderConfirmationImageUrl = () =>
@@ -96,6 +96,48 @@ const sendTextWhatsAppMessage = async ({ recipientNumber, body }) => {
   }
 
   return { sent: true };
+};
+
+const sendImageWhatsAppMessage = async ({ recipientNumber, imageUrl, caption }) => {
+  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const recipient = normalizeWhatsAppRecipient(recipientNumber);
+
+  if (!recipient) {
+    return { sent: false, reason: "NO_WHATSAPP_NUMBER" };
+  }
+
+  if (!token || !phoneNumberId) {
+    return { sent: false, reason: "WHATSAPP_API_NOT_CONFIGURED" };
+  }
+
+  if (typeof fetch !== "function") {
+    return { sent: false, reason: "FETCH_NOT_AVAILABLE" };
+  }
+
+  const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: recipient,
+      type: "image",
+      image: {
+        link: imageUrl,
+        caption
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`WhatsApp image message failed: ${errorText}`);
+  }
+
+  return { sent: true, type: "image" };
 };
 
 const buildTemplateTextParameter = (value) => ({
@@ -197,6 +239,17 @@ const buildOrderWhatsAppLink = (order) => {
 
 const sendOrderWhatsAppConfirmation = async (order) => {
   const recipientNumber = getOrderWhatsAppNumber(order);
+  const confirmationMessage = buildOrderConfirmationMessage(order);
+
+  try {
+    return await sendImageWhatsAppMessage({
+      recipientNumber,
+      imageUrl: getOrderConfirmationImageUrl(),
+      caption: confirmationMessage
+    });
+  } catch (imageErr) {
+    console.error("WhatsApp confirmation image error:", imageErr);
+  }
 
   try {
     return await sendTemplateWhatsAppMessage({
@@ -209,7 +262,7 @@ const sendOrderWhatsAppConfirmation = async (order) => {
     console.error("WhatsApp confirmation template error:", templateErr);
     const textDelivery = await sendTextWhatsAppMessage({
       recipientNumber,
-      body: buildOrderConfirmationMessage(order)
+      body: confirmationMessage
     });
 
     return {
