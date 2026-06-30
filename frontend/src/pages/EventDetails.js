@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+import { getEffectiveTicketPrice, isEventBookingOpen } from "../utils/eventPricing";
 import "./EventDetails.css";
 
 const getEventImage = (title) => {
@@ -27,6 +28,7 @@ function TrainingDetails() {
   const [paymentScreenshot, setPaymentScreenshot] = useState("");
   const [paymentScreenshotName, setPaymentScreenshotName] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -54,6 +56,27 @@ function TrainingDetails() {
 
     loadTraining();
   }, [id]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const effectiveTicketPrice = training
+    ? getEffectiveTicketPrice(training, currentTime)
+    : 0;
+
+  useEffect(() => {
+    if (!training) {
+      return;
+    }
+
+    setPaymentOrder(null);
+    setPaymentMessage("");
+  }, [effectiveTicketPrice, training]);
 
   const increaseQty = () => {
 
@@ -188,7 +211,8 @@ function TrainingDetails() {
   }
 
   const eventImage = getEventImage(training.title);
-  const isBookingOpen = true;
+  const isBookingOpen = isEventBookingOpen(training, currentTime);
+  const ticketPrice = effectiveTicketPrice;
 
   return (
     <>
@@ -243,18 +267,20 @@ function TrainingDetails() {
               </p>
               <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Ticket price</span>
-                <strong>Rs. {training.ticket_price}</strong>
+                <strong>{isBookingOpen ? `Rs. ${ticketPrice}` : "Closed"}</strong>
               </div>
               <div style={{ ...styles.infoRow, ...(isMobile ? styles.infoRowMobile : {}) }}>
                 <span>Booking status</span>
-                <strong>Open for booking</strong>
+                <strong>{isBookingOpen ? "Open for booking" : "Booking closed"}</strong>
               </div>
             </div>
 
             <aside style={styles.checkoutPanel}>
               <div style={styles.priceBlock}>
                 <span style={styles.metaLabel}>Price per ticket</span>
-                <strong style={styles.bigPrice}>Rs. {training.ticket_price}</strong>
+                <strong style={styles.bigPrice}>
+                  {isBookingOpen ? `Rs. ${ticketPrice}` : "Closed"}
+                </strong>
               </div>
 
               <div style={styles.divider} />
@@ -262,28 +288,31 @@ function TrainingDetails() {
               <div style={{ ...styles.quantityHeader, ...(isMobile ? styles.quantityHeaderMobile : {}) }}>
                 <span style={styles.quantityLabel}>Tickets</span>
                 <div style={styles.qtyBox}>
-                  <button className="details-qty-button" disabled={false} onClick={decreaseQty} style={styles.qtyBtn}>-</button>
+                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={decreaseQty} style={styles.qtyBtn}>-</button>
                   <span style={styles.qty}>{quantity}</span>
-                  <button className="details-qty-button" disabled={false} onClick={increaseQty} style={styles.qtyBtn}>+</button>
+                  <button className="details-qty-button" disabled={!isBookingOpen} onClick={increaseQty} style={styles.qtyBtn}>+</button>
                 </div>
               </div>
 
               <div style={styles.totalRow}>
                 <span>Total</span>
-                <strong>Rs. {training.ticket_price * quantity}</strong>
+                <strong>{isBookingOpen ? `Rs. ${ticketPrice * quantity}` : "Closed"}</strong>
               </div>
 
               <button
                 className="details-book-button"
-                disabled={paying}
+                disabled={paying || !isBookingOpen}
                 style={{
                   ...styles.bookBtn,
                   ...(!isBookingOpen ? styles.bookBtnDisabled : {})
                 }}
                 onClick={handleBook}
               >
-                {paying ? "Preparing QR..." : "Show Payment QR"}
+                {!isBookingOpen ? "Booking Closed" : paying ? "Preparing QR..." : "Show Payment QR"}
               </button>
+              {!isBookingOpen && (
+                <p style={styles.closedMessage}>Associate Academy booking closed after July 3, 2026.</p>
+              )}
             </aside>
           </section>
 

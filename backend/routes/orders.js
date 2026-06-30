@@ -6,6 +6,7 @@ const Event = require("../models/Event");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const { sendAdminPaymentSubmittedNotification } = require("../utils/whatsapp");
+const { getEffectiveTicketPrice, isBookingOpen } = require("../utils/eventPricing");
 
 const { authMiddleware } = require("../middleware/auth");
 
@@ -47,6 +48,10 @@ router.post("/create", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    if (!isBookingOpen(event)) {
+      return res.status(400).json({ message: "Booking is closed for this event" });
+    }
+
 
     const user = await User.findById(req.user.userId);
     if (!user) {
@@ -59,7 +64,8 @@ router.post("/create", authMiddleware, async (req, res) => {
       });
     }
 
-    const amount = event.ticket_price * ticketCount;
+    const ticketPrice = getEffectiveTicketPrice(event);
+    const amount = ticketPrice * ticketCount;
     const order = await Order.create({
       userId: user._id,
       eventId: event._id,
@@ -86,7 +92,7 @@ router.post("/create", authMiddleware, async (req, res) => {
       },
       event: {
         title: event.title,
-        ticket_price: event.ticket_price,
+        ticket_price: ticketPrice,
         location: event.location,
         date: event.date
       }

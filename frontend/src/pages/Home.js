@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../services/api";
 import useIsMobile from "../hooks/useIsMobile";
+import { getEffectiveTicketPrice, isEventBookingOpen } from "../utils/eventPricing";
 import "./Home.css";
 
 const getEventImage = (title) => {
@@ -19,6 +20,7 @@ const getEventImage = (title) => {
 function Home() {
   const [trainings, setTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -34,6 +36,14 @@ function Home() {
     };
 
     loadTrainings();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
   return (
@@ -76,7 +86,8 @@ function Home() {
         <div style={{ ...styles.grid, ...(isMobile ? styles.gridMobile : {}) }}>
           {trainings.map((t) => {
             const eventImage = getEventImage(t.title);
-            const isBookingOpen = true;
+            const isBookingOpen = isEventBookingOpen(t, currentTime);
+            const ticketPrice = getEffectiveTicketPrice(t, currentTime);
 
             return (
               <article key={t._id} className="event-card" style={styles.card}>
@@ -89,9 +100,11 @@ function Home() {
                 )}
                 <div style={styles.cardTop}>
                   <span style={isBookingOpen ? styles.cardBadge : styles.cardBadgeClosed}>
-                    Open
+                    {isBookingOpen ? "Open" : "Closed"}
                   </span>
-                  <strong style={styles.price}>Rs. {t.ticket_price}</strong>
+                  <strong style={styles.price}>
+                    {isBookingOpen ? `Rs. ${ticketPrice}` : "Closed"}
+                  </strong>
                 </div>
 
                 <h3 style={{ ...styles.title, ...(isMobile ? styles.titleMobile : {}) }}>
@@ -111,7 +124,13 @@ function Home() {
                 </div>
 
                 <Link to={`/training/${t._id}`} style={styles.link}>
-                  <button className="event-button" style={styles.button}>
+                  <button
+                    className="event-button"
+                    style={{
+                      ...styles.button,
+                      ...(!isBookingOpen ? styles.buttonDisabled : {})
+                    }}
+                  >
                     View Event
                   </button>
                 </Link>
@@ -353,6 +372,11 @@ const styles = {
     fontWeight: "800",
     fontSize: "15px",
     boxShadow: "0 16px 32px rgba(0, 99, 65, 0.24)"
+  },
+  buttonDisabled: {
+    background: "#98A2B3",
+    boxShadow: "none",
+    cursor: "not-allowed"
   }
 };
 

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Event = require("../models/Event");
+const { addEffectiveTicketPrice } = require("../utils/eventPricing");
 
 const defaultEvents = [
   {
@@ -33,11 +34,11 @@ const legacyEventTitles = [
 
 
 const addBookingStatus = (event) => {
-  const eventData = event.toObject ? event.toObject() : event;
+  const eventData = addEffectiveTicketPrice(event);
 
   return {
     ...eventData,
-    bookingOpen: true
+    bookingOpen: eventData.bookingOpen
   };
 };
 
