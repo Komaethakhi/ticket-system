@@ -4,7 +4,6 @@ import useIsMobile from "../hooks/useIsMobile";
 import mi27Logo from "../assets/mi27-logo.jpeg";
 import {
   ASSOCIATE_ACADEMY_BOOKING_CLOSE_AT,
-  ASSOCIATE_ACADEMY_EARLY_PRICE,
   ASSOCIATE_ACADEMY_PRICE_CHANGE_AT,
   ASSOCIATE_ACADEMY_REGULAR_PRICE
 } from "../utils/eventPricing";
@@ -103,7 +102,7 @@ function Navbar() {
             <strong style={styles.countdownText}>
               {countdown.priceChanged
                 ? `Time left for Associate Academy booking at Rs.${ASSOCIATE_ACADEMY_REGULAR_PRICE}`
-                : `Time left for Associate Academy Rs.${ASSOCIATE_ACADEMY_EARLY_PRICE} ticket`}
+                : "Time left for Associate Academy Early Bird Tickets"}
             </strong>
           </>
         ) : (
